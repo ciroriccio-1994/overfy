@@ -43,7 +43,7 @@ export function Hero() {
             ,<br />
             <em className="font-display-italic">finalmente</em>{" "}
             <span className="inline-block text-[var(--color-coral)]">
-              fatto bene.
+              a portata di un click.
             </span>
           </h1>
 
