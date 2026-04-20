@@ -48,28 +48,27 @@ export function Hero() {
           </h1>
 
           <p className="text-lg md:text-2xl text-[var(--color-ink-soft)] max-w-3xl mx-auto leading-relaxed mb-8">
-            Siti web, e-commerce, prenotazioni e chatbot AI. Zero costi di
-            setup. Ci occupiamo di tutto noi — tu continui a fare quello che
-            sai fare meglio.
+            Siti web, e-commerce, prenotazioni, chatbot AI, app native e web app.
+            Zero costi di setup. Ci occupiamo di tutto noi — tu continui a fare
+            quello che sai fare meglio.
           </p>
 
-          {/* Nuovo claim espanso */}
+          {/* Claim rinforzato */}
           <div
             className="inline-block bg-[var(--color-paper)] border-2 rounded-2xl px-6 py-5 md:px-8 md:py-6 mb-12 max-w-3xl"
             style={{ borderColor: "var(--color-sky)" }}
           >
             <p className="font-display text-2xl md:text-3xl leading-tight text-[var(--color-ink)]">
-              Qualsiasi cosa tu voglia digitalizzare,{" "}
               <em
                 className="font-display-italic"
                 style={{ color: "var(--color-sky-ink)" }}
               >
-                risparmia tempo e parla con noi.
-              </em>
+                Qualsiasi cosa
+              </em>{" "}
+              tu voglia digitalizzare, la realizziamo.
             </p>
             <p className="text-sm font-mono text-[var(--color-muted)] mt-3 uppercase tracking-wider">
-              Landing, e-commerce, gestionali, app, automazioni — la soluzione
-              la pensiamo insieme.
+              Landing · E-commerce · Prenotazioni · Chatbot AI · Gestionali · CRM · App native iOS/Android · Web app · Automazioni · Integrazioni API
             </p>
           </div>
 
@@ -78,7 +77,7 @@ export function Hero() {
               href="#demo"
               className="group bg-[var(--color-ink)] text-[var(--color-paper)] px-8 py-4 rounded-full text-sm font-medium hover:bg-[var(--color-mint-ink)] transition flex items-center justify-center gap-2"
             >
-              Esplora il catalogo
+              Esplora gli esempi
               <span className="group-hover:translate-x-1 transition-transform">
                 →
               </span>
@@ -91,17 +90,17 @@ export function Hero() {
             </Link>
           </div>
 
-          {/* Stats con i 3 colori - aggiornato con 48/72h */}
+          {/* Stats */}
           <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-4xl mx-auto">
             <div
               className="bg-[var(--color-paper)] border border-[var(--color-line)] rounded-2xl p-6 md:p-8 hover:border-[var(--color-coral)] transition"
               style={{ borderColor: "var(--color-coral-soft)" }}
             >
               <div className="font-display text-5xl md:text-7xl text-[var(--color-coral)] leading-none mb-3">
-                6+
+                ∞
               </div>
               <div className="text-xs uppercase tracking-wider text-[var(--color-muted)] font-mono">
-                Demo pronti
+                Soluzioni possibili
               </div>
             </div>
             <div
