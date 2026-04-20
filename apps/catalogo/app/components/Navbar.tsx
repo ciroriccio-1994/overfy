@@ -48,6 +48,12 @@ export function Navbar() {
             Come lavoriamo
           </Link>
           <Link
+            href="/#modello"
+            className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
+          >
+            Il modello
+          </Link>
+          <Link
             href="/contatti"
             className="bg-[var(--color-ink)] text-[var(--color-paper)] px-5 py-2.5 rounded-full text-xs font-medium hover:bg-[var(--color-mint-ink)] transition"
           >
