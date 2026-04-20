@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #fafaf4;
+  --color-bg-soft: #f4f3ea;
+  --color-paper: #ffffff;
+  --color-ink: #0f0f0f;
+  --color-ink-soft: #2a2a2a;
+  --color-muted: #7a7870;
+  --color-line: #e6e3d8;
+
+  /* 3 accenti che dialogano - uno per tier */
+  --color-coral: #ff4d4d;
+  --color-coral-soft: #ffe5e5;
+  --color-coral-ink: #b82c2c;
+
+  --color-mint: #00c896;
+  --color-mint-soft: #d6f5ea;
+  --color-mint-ink: #008a67;
+
+  --color-sky: #3ba3ff;
+  --color-sky-soft: #dcefff;
+  --color-sky-ink: #1a6ac4;
+
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.font-display-italic {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--color-mint);
+  color: var(--color-ink);
+}
+
+@keyframes blob {
+  0%, 100% {
+    border-radius: 50% 40% 60% 35% / 50% 60% 35% 50%;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    border-radius: 45% 55% 40% 55% / 55% 40% 60% 45%;
+    transform: translate(20px, -15px) rotate(3deg);
+  }
+  66% {
+    border-radius: 55% 45% 55% 40% / 40% 55% 45% 60%;
+    transform: translate(-15px, 15px) rotate(-3deg);
+  }
+}
+
+.blob {
+  animation: blob 14s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: marquee 45s linear infinite;
+}
+
+.grain {
+  position: relative;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
