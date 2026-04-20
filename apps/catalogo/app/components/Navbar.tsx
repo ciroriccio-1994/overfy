@@ -34,12 +34,18 @@ export function Navbar() {
           </div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 text-sm">
+        <div className="hidden md:flex items-center gap-7 text-sm">
           <Link
             href="/#demo"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
-            I lavori
+            Esempi
+          </Link>
+          <Link
+            href="/#ai-business"
+            className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
+          >
+            AI per aziende
           </Link>
           <Link
             href="/#processo"

@@ -1,6 +1,7 @@
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
 import { DemoGrid } from "./components/DemoGrid";
+import { AiBusiness } from "./components/AiBusiness";
 import { ChatbotFeature } from "./components/ChatbotFeature";
 import { Process } from "./components/Process";
 import { Model } from "./components/Model";
@@ -12,6 +13,7 @@ export default function HomePage() {
       <Navbar />
       <Hero />
       <DemoGrid />
+      <AiBusiness />
       <ChatbotFeature />
       <Process />
       <Model />
