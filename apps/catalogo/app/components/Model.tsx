@@ -6,7 +6,7 @@ export function Model() {
         <div className="mb-16 md:mb-20 max-w-3xl">
           <div className="inline-flex items-center gap-2 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full px-3 py-1 mb-6 text-xs font-mono">
             <span className="text-[var(--color-ink-soft)]">
-              04 / Come funziona
+              06 / Come funziona
             </span>
           </div>
           <h2 className="font-display text-5xl md:text-7xl leading-[0.95] text-[var(--color-ink)] tracking-tight mb-6">
@@ -127,8 +127,8 @@ export function Model() {
                   ✓
                 </span>
                 <span>
-                  Hosting, SSL, backup, aggiornamenti: <strong>tutto
-                  incluso</strong>
+                  Hosting, <strong>dominio .it</strong>, SSL, backup,
+                  aggiornamenti: <strong>tutto incluso</strong>
                 </span>
               </li>
               <li className="flex gap-3">
@@ -168,7 +168,7 @@ export function Model() {
           </div>
         </div>
 
-        {/* Sezione trasparenza "Come Netflix" */}
+        {/* Sezione trasparenza "Se smetti di pagare" */}
         <div
           className="rounded-2xl p-8 md:p-12 border-2"
           style={{
@@ -253,11 +253,13 @@ export function Model() {
                   </div>
                   <div>
                     <div className="font-display text-xl text-[var(--color-ink)] mb-1 leading-tight">
-                      Dopo 90 giorni i dati vengono eliminati
+                      Dopo 90 giorni, chiusura completa
                     </div>
                     <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
-                      Come prevede il GDPR. Niente dati conservati per sempre,
-                      niente sorprese.
+                      Trascorsi i 90 giorni, cancelliamo definitivamente i dati
+                      (come prevede il GDPR) e non rinnoviamo più il dominio
+                      .it, che viene rilasciato. Niente dati conservati per
+                      sempre, niente sorprese.
                     </p>
                   </div>
                 </div>

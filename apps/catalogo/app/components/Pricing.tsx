@@ -31,11 +31,11 @@ const plans: Plan[] = [
       "Per professionisti singoli, piccoli studi, chi non ha mai avuto un sito.",
     features: [
       "Sito web fino a 3 pagine",
-      "Sottodominio gratuito",
+      "Dominio .it personalizzato incluso",
       "Mobile responsive + SEO base",
       "Form contatti con notifica",
       "Google Business ottimizzato",
-      "Chatbot base (FAQ template)",
+      "Chatbot base con risposte preimpostate",
       "Hosting, SSL, backup inclusi",
       "Modifiche testi/foto illimitate",
       "Supporto WhatsApp",
@@ -55,12 +55,11 @@ const plans: Plan[] = [
     features: [
       "Tutto dell'Essenziale, più:",
       "Sito fino a 7 pagine",
-      "Dominio .it personalizzato",
-      "Email professionale",
+      "Email professionale (info@tuonome.it)",
       "Sistema prenotazioni online",
       "Menu digitale QR (ristorazione)",
       "Promemoria WhatsApp/SMS automatici",
-      "Chatbot AI avanzato personalizzato",
+      "Chatbot AI avanzato personalizzato sul tuo business",
       "Google Analytics + report mensile",
       "2 modifiche design/anno",
       "Supporto prioritario (2h)",
@@ -85,6 +84,7 @@ const plans: Plan[] = [
       "Gestione inventario",
       "Dashboard amministratore",
       "Email marketing integrato",
+      "Chatbot AI avanzato personalizzato",
       "Tool AI leggeri (OCR, classificatori)",
       "Integrazione con 1 gestionale",
       "Report avanzati",
@@ -148,7 +148,6 @@ const colorMap: Record<
   },
 };
 
-// Formatta il prezzo con virgola italiana e separatore migliaia
 function formatPrice(price: number): string {
   return price.toLocaleString("it-IT", {
     minimumFractionDigits: 2,
@@ -188,9 +187,9 @@ export function Pricing() {
           </p>
         </div>
 
-        {/* Toggle + Prova gratuita */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
-          <div className="inline-flex items-center gap-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full p-1.5 self-start">
+        {/* Toggle */}
+        <div className="mb-12 flex justify-start">
+          <div className="inline-flex items-center gap-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full p-1.5">
             <button
               onClick={() => setCycle("monthly")}
               className={`px-5 py-2 rounded-full text-sm font-medium transition ${
@@ -223,27 +222,9 @@ export function Pricing() {
                       : "var(--color-mint-ink)",
                 }}
               >
-                Risparmi
+                2 mesi gratis
               </span>
             </button>
-          </div>
-
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm border-2"
-            style={{
-              background: "var(--color-sky-soft)",
-              borderColor: "var(--color-sky)",
-            }}
-          >
-            <span className="text-lg">🎁</span>
-            <div className="flex flex-col leading-tight">
-              <span className="font-medium text-[var(--color-ink)]">
-                7 giorni di prova gratuita
-              </span>
-              <span className="text-xs text-[var(--color-sky-ink)] font-mono">
-                Nessuna carta richiesta
-              </span>
-            </div>
           </div>
         </div>
 
@@ -252,12 +233,14 @@ export function Pricing() {
           {plans.map((plan) => {
             const c = colorMap[plan.color];
             const isCustom = plan.monthlyPrice === null;
-            const displayPrice =
-              cycle === "monthly" ? plan.monthlyPrice : plan.annualPrice;
-            const savings =
-              !isCustom && plan.monthlyPrice && plan.annualPrice
-                ? plan.monthlyPrice * 12 - plan.annualPrice
-                : 0;
+
+            // PREZZO GRANDE = sempre mensile (in annuale mostra equivalente /mese)
+            const bigPrice =
+              cycle === "monthly"
+                ? plan.monthlyPrice
+                : plan.annualPrice
+                ? plan.annualPrice / 12
+                : null;
 
             return (
               <div
@@ -296,8 +279,8 @@ export function Pricing() {
                     — {plan.name} —
                   </div>
 
-                  {/* Prezzo */}
-                  <div className="mb-3 min-h-[88px]">
+                  {/* Prezzo grande sempre al mese */}
+                  <div className="mb-3 min-h-[100px]">
                     {isCustom ? (
                       <div>
                         <div
@@ -317,22 +300,28 @@ export function Pricing() {
                             className="font-display text-5xl md:text-6xl leading-none"
                             style={{ color: c.ink }}
                           >
-                            €{formatPrice(displayPrice as number)}
+                            €{formatPrice(bigPrice as number)}
                           </span>
                           <span className="text-[var(--color-muted)] text-xs">
-                            {cycle === "monthly" ? "/mese" : "/anno"}
+                            /mese
                           </span>
                         </div>
-                        {cycle === "annual" && savings > 0 ? (
+
+                        {cycle === "annual" && plan.annualPrice ? (
+                          <div className="text-xs text-[var(--color-muted)] mt-2 leading-tight">
+                            fatturati annualmente
+                            <br />
+                            <span className="font-mono">
+                              (€{formatPrice(plan.annualPrice)}/anno)
+                            </span>
+                          </div>
+                        ) : cycle === "monthly" && plan.annualPrice ? (
                           <div
                             className="text-xs font-mono mt-2"
                             style={{ color: c.ink }}
                           >
-                            Risparmi €{formatPrice(savings)}/anno
-                          </div>
-                        ) : cycle === "monthly" && plan.annualPrice ? (
-                          <div className="text-xs font-mono text-[var(--color-muted)] mt-2">
-                            Oppure €{formatPrice(plan.annualPrice)}/anno
+                            o €
+                            {formatPrice(plan.annualPrice / 12)}/mese annuale
                           </div>
                         ) : (
                           <div className="text-xs font-mono text-[var(--color-muted)] mt-2">
@@ -343,14 +332,7 @@ export function Pricing() {
                     )}
                   </div>
 
-                  <p
-                    className="italic text-sm leading-relaxed"
-                    style={{
-                      color: plan.highlight
-                        ? "var(--color-ink-soft)"
-                        : "var(--color-ink-soft)",
-                    }}
-                  >
+                  <p className="italic text-sm leading-relaxed text-[var(--color-ink-soft)]">
                     {plan.tagline}
                   </p>
                 </div>
@@ -396,7 +378,6 @@ export function Pricing() {
                   })}
                 </ul>
 
-                {/* Nota fee iniziale Su Misura */}
                 {plan.note && (
                   <div
                     className="text-xs italic mb-4 p-3 rounded-lg"
@@ -429,16 +410,11 @@ export function Pricing() {
         </div>
 
         {/* Note legali */}
-        <div className="text-center mt-12 max-w-3xl mx-auto space-y-2">
+        <div className="text-center mt-12 max-w-3xl mx-auto">
           <p className="text-sm text-[var(--color-muted)]">
             Tutti i prezzi sono <strong>IVA esclusa</strong>. Fatturazione{" "}
             {cycle === "annual" ? "annuale" : "mensile"}. Disdetta libera in
             qualsiasi momento.
-          </p>
-          <p className="text-xs font-mono text-[var(--color-muted)] italic">
-            La prova di 7 giorni è completamente gratuita e non richiede carta
-            di credito. Se al termine non fa per te, nessun pagamento sarà
-            addebitato.
           </p>
         </div>
       </div>
