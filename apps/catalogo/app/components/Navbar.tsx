@@ -34,7 +34,7 @@ export function Navbar() {
           </div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-6 text-sm">
+        <div className="hidden lg:flex items-center gap-6 text-sm">
           <Link
             href="/#demo"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
@@ -54,6 +54,12 @@ export function Navbar() {
             Pacchetti
           </Link>
           <Link
+            href="/#gioco-pulito"
+            className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
+          >
+            Gioco pulito
+          </Link>
+          <Link
             href="/#modello"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
@@ -69,7 +75,7 @@ export function Navbar() {
 
         <Link
           href="/contatti"
-          className="md:hidden bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 rounded-full text-xs"
+          className="lg:hidden bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 rounded-full text-xs"
         >
           Contatti
         </Link>

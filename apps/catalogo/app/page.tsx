@@ -4,8 +4,9 @@ import { DemoGrid } from "./components/DemoGrid";
 import { AiBusiness } from "./components/AiBusiness";
 import { ChatbotFeature } from "./components/ChatbotFeature";
 import { Process } from "./components/Process";
-import { Model } from "./components/Model";
 import { Pricing } from "./components/Pricing";
+import { FairUse } from "./components/FairUse";
+import { Model } from "./components/Model";
 import { FinalCta, Footer } from "./components/Footer";
 
 export default function HomePage() {
@@ -17,8 +18,9 @@ export default function HomePage() {
       <AiBusiness />
       <ChatbotFeature />
       <Process />
-      <Model />
       <Pricing />
+      <FairUse />
+      <Model />
       <FinalCta />
       <Footer />
     </main>
