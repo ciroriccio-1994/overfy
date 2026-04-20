@@ -131,7 +131,7 @@ function formatPrice(price: number): string {
 }
 
 export function Pricing() {
-  const [cycle, setCycle] = useState<BillingCycle>("annual");
+  const [cycle, setCycle] = useState<BillingCycle>("monthly");
 
   return (
     <section id="pacchetti" className="py-24 md:py-32 px-6 bg-[var(--color-bg-soft)] relative overflow-hidden">

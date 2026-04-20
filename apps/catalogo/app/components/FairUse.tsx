@@ -5,9 +5,6 @@ export function FairUse() {
 
       <div className="max-w-6xl mx-auto relative">
         <div className="mb-16 md:mb-20 max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full px-3 py-1 mb-6 text-xs font-mono">
-            <span className="text-[var(--color-ink-soft)]">07 / Gioco pulito</span>
-          </div>
           <h2 className="font-display text-5xl md:text-7xl leading-[0.95] text-[var(--color-ink)] tracking-tight mb-6">
             Le regole,
             <br />
