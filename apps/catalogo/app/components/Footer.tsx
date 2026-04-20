@@ -2,50 +2,42 @@ import Link from "next/link";
 
 export function FinalCta() {
   return (
-    <section className="relative py-24 md:py-32 px-6 overflow-hidden">
-      {/* Colored blobs */}
-      <div
-        className="absolute top-0 right-0 w-[400px] h-[400px] blob opacity-30"
-        style={{ background: "var(--color-mint)" }}
-      ></div>
-      <div
-        className="absolute bottom-0 left-0 w-[300px] h-[300px] blob opacity-25"
-        style={{ background: "var(--color-coral)", animationDelay: "-8s" }}
-      ></div>
+    <section className="py-24 md:py-32 px-6 relative overflow-hidden">
+      <div className="absolute inset-0" style={{ background: "var(--color-ink)" }}></div>
+      <div className="absolute top-10 left-10 w-[400px] h-[400px] blob opacity-20" style={{ background: "var(--color-mint)" }}></div>
+      <div className="absolute bottom-10 right-10 w-[300px] h-[300px] blob opacity-15" style={{ background: "var(--color-coral)", animationDelay: "-8s" }}></div>
 
-      <div className="max-w-4xl mx-auto text-center relative">
-        <div className="inline-flex items-center gap-2 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full px-3 py-1 mb-8 text-xs font-mono">
+      <div className="max-w-5xl mx-auto relative text-center">
+        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-4 py-2 mb-8 text-xs font-mono text-white/80">
           <span className="w-2 h-2 rounded-full bg-[var(--color-mint)] animate-pulse"></span>
-          <span className="text-[var(--color-ink-soft)]">
-            Pronti a cominciare
-          </span>
+          <span>Pronti a partire · Disponibili oggi</span>
         </div>
-        <h2 className="font-display text-6xl md:text-8xl leading-[0.95] text-[var(--color-ink)] tracking-tight mb-8">
-          Parliamone.
+
+        <h2 className="font-display text-5xl md:text-8xl leading-[0.95] text-white tracking-tight mb-8">
+          Non aspettare
           <br />
-          <em className="font-display-italic text-[var(--color-coral)]">
-            La prima call è gratuita.
+          <em className="font-display-italic" style={{ color: "var(--color-mint)" }}>
+            altri 6 mesi.
           </em>
         </h2>
-        <p className="text-lg text-[var(--color-ink-soft)] leading-relaxed max-w-xl mx-auto mb-12">
-          Raccontaci il tuo progetto, i tuoi obiettivi, il tuo settore. Ti
-          proponiamo la soluzione più adatta senza impegno.
+
+        <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-12 leading-relaxed">
+          Ogni giorno senza il tuo business online è un giorno in cui i tuoi
+          clienti si rivolgono a chi è già presente. Partiamo subito.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/contatti"
-            className="bg-[var(--color-ink)] text-[var(--color-paper)] px-10 py-5 rounded-full text-sm font-medium hover:bg-[var(--color-mint-ink)] transition"
+            className="bg-white text-[var(--color-ink)] px-10 py-5 rounded-full text-base font-medium hover:bg-[var(--color-mint)] transition"
           >
-            Richiedi consulto gratuito →
+            Parliamo oggi →
           </Link>
           <a
-            href="https://wa.me/393331234567"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[var(--color-paper)] border border-[var(--color-line)] text-[var(--color-ink)] px-10 py-5 rounded-full text-sm font-medium hover:border-[var(--color-ink)] transition"
+            href="mailto:info@overfydigital.com"
+            className="border border-white/30 text-white px-10 py-5 rounded-full text-base font-medium hover:bg-white/10 transition"
           >
-            Scrivici su WhatsApp
+            info@overfydigital.com
           </a>
         </div>
       </div>
@@ -55,42 +47,61 @@ export function FinalCta() {
 
 export function Footer() {
   return (
-    <footer className="bg-[var(--color-ink)] text-[var(--color-paper)]/60 px-6 py-12 border-t border-[var(--color-line)]">
+    <footer className="bg-[var(--color-bg-soft)] border-t border-[var(--color-line)] py-16 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-0.5">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-coral)]"></span>
-              <span className="w-2 h-2 rounded-full bg-[var(--color-mint)] -ml-0.5"></span>
-              <span className="w-2 h-2 rounded-full bg-[var(--color-sky)] -ml-0.5"></span>
-            </div>
-            <span className="font-display text-lg text-[var(--color-paper)]">
-              Catalogo Soluzioni
-            </span>
+        <div className="grid md:grid-cols-4 gap-10 mb-12">
+          <div className="md:col-span-2">
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
+              <div className="flex gap-0.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
+              </div>
+              <span className="font-display text-2xl text-[var(--color-ink)] tracking-tight">
+                Overfy
+              </span>
+            </Link>
+            <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed max-w-sm mb-4">
+              Il tuo business, un livello sopra. Digitalizzazione su misura
+              per attività italiane — zero costi di setup, tutto incluso
+              nell&apos;abbonamento.
+            </p>
+            <p className="text-xs font-mono text-[var(--color-muted)]">
+              Napoli, Italia · 2026
+            </p>
           </div>
-          <div className="flex gap-6 text-sm font-mono">
-            <Link
-              href="/#demo"
-              className="hover:text-[var(--color-mint)] transition"
-            >
-              I lavori
-            </Link>
-            <Link
-              href="/#processo"
-              className="hover:text-[var(--color-mint)] transition"
-            >
-              Come lavoriamo
-            </Link>
-            <Link
-              href="/contatti"
-              className="hover:text-[var(--color-mint)] transition"
-            >
+
+          <div>
+            <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
+              Esplora
+            </div>
+            <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
+              <li><Link href="/#demo" className="hover:text-[var(--color-ink)] transition">Esempi</Link></li>
+              <li><Link href="/#ai-business" className="hover:text-[var(--color-ink)] transition">AI per aziende</Link></li>
+              <li><Link href="/#pacchetti" className="hover:text-[var(--color-ink)] transition">Pacchetti</Link></li>
+              <li><Link href="/#gioco-pulito" className="hover:text-[var(--color-ink)] transition">Gioco pulito</Link></li>
+              <li><Link href="/#modello" className="hover:text-[var(--color-ink)] transition">Il modello</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
               Contatti
-            </Link>
+            </div>
+            <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
+              <li><a href="mailto:info@overfydigital.com" className="hover:text-[var(--color-ink)] transition">info@overfydigital.com</a></li>
+              <li><Link href="/contatti" className="hover:text-[var(--color-ink)] transition">Form contatti</Link></li>
+            </ul>
           </div>
         </div>
-        <div className="text-xs font-mono text-[var(--color-paper)]/40 text-center md:text-left mt-8 pt-8 border-t border-[var(--color-paper)]/10">
-          © 2026 · P.IVA 06789012345 · Napoli, Italia · Catalogo Soluzioni
+
+        <div className="pt-8 border-t border-[var(--color-line)] flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <p className="text-xs text-[var(--color-muted)]">
+            © 2026 Overfy. Tutti i diritti riservati.
+          </p>
+          <p className="text-xs font-mono text-[var(--color-muted)] italic">
+            Il tuo business, un livello sopra.
+          </p>
         </div>
       </div>
     </footer>

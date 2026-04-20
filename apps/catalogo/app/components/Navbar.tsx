@@ -21,16 +21,16 @@ export function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-2.5 group">
           <div className="flex gap-0.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
           </div>
-          <div className="leading-tight">
-            <div className="font-display text-xl text-[var(--color-ink)] tracking-tight">
-              Catalogo Soluzioni
-            </div>
+          <div className="leading-none">
+            <span className="font-display text-2xl text-[var(--color-ink)] tracking-tight">
+              Overfy
+            </span>
           </div>
         </Link>
 

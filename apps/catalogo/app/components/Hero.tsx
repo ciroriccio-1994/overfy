@@ -3,7 +3,7 @@ import Link from "next/link";
 export function Hero() {
   return (
     <section className="relative pt-40 pb-20 md:pt-48 md:pb-28 px-6 overflow-hidden">
-      {/* Blob colorati in background */}
+      {/* Blob colorati */}
       <div
         className="absolute top-20 right-10 md:right-20 w-[380px] h-[380px] blob opacity-40"
         style={{ background: "var(--color-mint)" }}
@@ -17,7 +17,6 @@ export function Hero() {
         style={{ background: "var(--color-coral)", animationDelay: "-10s" }}
       ></div>
 
-      {/* Overlay noise */}
       <div
         className="absolute inset-0 opacity-[0.015] pointer-events-none"
         style={{
@@ -27,11 +26,12 @@ export function Hero() {
 
       <div className="max-w-6xl mx-auto relative">
         <div className="text-center max-w-5xl mx-auto">
-          {/* Tag */}
+          {/* Tag con nome brand */}
           <div className="inline-flex items-center gap-2 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full px-4 py-2 mb-10 text-xs font-mono">
             <span className="w-2 h-2 rounded-full bg-[var(--color-mint)] animate-pulse"></span>
             <span className="text-[var(--color-ink-soft)]">
-              Digitalizzazione su misura · Italia 2026
+              <span className="font-semibold text-[var(--color-ink)]">Overfy</span>
+              {" "}· Digitalizzazione su misura · Italia 2026
             </span>
           </div>
 
@@ -53,7 +53,6 @@ export function Hero() {
             quello che sai fare meglio.
           </p>
 
-          {/* Claim rinforzato */}
           <div
             className="inline-block bg-[var(--color-paper)] border-2 rounded-2xl px-6 py-5 md:px-8 md:py-6 mb-12 max-w-3xl"
             style={{ borderColor: "var(--color-sky)" }}
