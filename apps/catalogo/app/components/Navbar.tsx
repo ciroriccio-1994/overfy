@@ -34,7 +34,7 @@ export function Navbar() {
           </div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-7 text-sm">
+        <div className="hidden md:flex items-center gap-6 text-sm">
           <Link
             href="/#demo"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
@@ -48,10 +48,10 @@ export function Navbar() {
             AI per aziende
           </Link>
           <Link
-            href="/#processo"
-            className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
+            href="/#pacchetti"
+            className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition font-medium"
           >
-            Come lavoriamo
+            Pacchetti
           </Link>
           <Link
             href="/#modello"
