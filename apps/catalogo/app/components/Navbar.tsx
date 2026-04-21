@@ -52,10 +52,10 @@ export function Navbar() {
             Per aziende
           </Link>
           <Link
-            href="/modello"
+            href="/login"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
-            Il modello
+            Accedi
           </Link>
           <Link
             href="/contatti"

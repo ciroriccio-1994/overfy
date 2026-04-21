@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type BillingCycle = "monthly" | "annual";
 
@@ -132,6 +133,54 @@ function formatPrice(price: number): string {
 
 export function Pricing() {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Verifica stato auth client-side (non bloccante per il SSR)
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => setAuthed(!!user));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session?.user);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  async function handlePaidCta(planId: string) {
+    setError(null);
+    const interval: "month" | "year" = cycle === "annual" ? "year" : "month";
+
+    // Se non loggato → mandiamo a registrazione con piano preselezionato
+    if (!authed) {
+      window.location.href = `/registrati?plan=${planId}&interval=${interval}`;
+      return;
+    }
+
+    // Se loggato → apriamo checkout diretto
+    setLoadingPlan(planId);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: planId, interval }),
+      });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      if (data?.redirectTo) {
+        window.location.href = `${data.redirectTo}?plan=${planId}&interval=${interval}`;
+        return;
+      }
+      setError(data?.error || "Impossibile avviare il pagamento.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Errore di rete.");
+    } finally {
+      setLoadingPlan(null);
+    }
+  }
 
   return (
     <section id="pacchetti" className="py-24 md:py-32 px-6 bg-[var(--color-bg-soft)] relative overflow-hidden">
@@ -140,7 +189,7 @@ export function Pricing() {
       <div className="max-w-7xl mx-auto relative">
         <div className="mb-12 md:mb-16 max-w-3xl">
           <div className="inline-flex items-center gap-2 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full px-3 py-1 mb-6 text-xs font-mono">
-            <span className="text-[var(--color-ink-soft)]">06 / Pacchetti</span>
+            <span className="text-[var(--color-ink-soft)]">03 / Pacchetti</span>
           </div>
           <h2 className="font-display text-5xl md:text-7xl leading-[0.95] text-[var(--color-ink)] tracking-tight mb-6">
             Prezzi chiari,
@@ -148,8 +197,7 @@ export function Pricing() {
             <em className="font-display-italic text-[var(--color-mint-ink)]">zero sorprese.</em>
           </h2>
           <p className="text-lg text-[var(--color-ink-soft)] leading-relaxed max-w-2xl">
-            Scegli il pacchetto giusto per te. Paghi solo quando usi il
-            servizio. Disdetta libera in qualsiasi momento.
+            Scegli il pacchetto giusto per te. Paghi solo quando usi il servizio. Disdetta libera in qualsiasi momento.
           </p>
         </div>
 
@@ -179,11 +227,18 @@ export function Pricing() {
           </div>
         </div>
 
+        {error && (
+          <div className="mb-6 p-4 rounded-xl text-sm max-w-md" style={{ background: "var(--color-coral-soft)", color: "var(--color-coral-ink)" }}>
+            {error}
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {plans.map((plan) => {
             const c = colorMap[plan.color];
             const isCustom = plan.monthlyPrice === null;
             const bigPrice = cycle === "monthly" ? plan.monthlyPrice : plan.annualPrice ? plan.annualPrice / 12 : null;
+            const isLoading = loadingPlan === plan.id;
 
             return (
               <div
@@ -277,16 +332,27 @@ export function Pricing() {
                   </div>
                 )}
 
-                <Link
-                  href="/contatti"
-                  className="block text-center py-3 rounded-full text-sm font-medium transition"
-                  style={{
-                    background: plan.highlight ? "var(--color-ink)" : isCustom ? "var(--color-ink)" : c.accent,
-                    color: "white",
-                  }}
-                >
-                  {plan.cta} →
-                </Link>
+                {isCustom ? (
+                  <Link
+                    href={`/contatti?source=su-misura`}
+                    className="block text-center py-3 rounded-full text-sm font-medium transition"
+                    style={{ background: "var(--color-ink)", color: "white" }}
+                  >
+                    {plan.cta} →
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => handlePaidCta(plan.id)}
+                    disabled={isLoading}
+                    className="block text-center py-3 rounded-full text-sm font-medium transition disabled:opacity-60"
+                    style={{
+                      background: plan.highlight ? "var(--color-ink)" : c.accent,
+                      color: "white",
+                    }}
+                  >
+                    {isLoading ? "Preparo pagamento…" : `${plan.cta} →`}
+                  </button>
+                )}
               </div>
             );
           })}
