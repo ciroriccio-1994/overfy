@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#D1F5EA"/>
+  <g fill="#00c896" opacity="0.15">
+    <circle cx="80" cy="80" r="3"/>
+    <circle cx="180" cy="120" r="3"/>
+    <circle cx="720" cy="180" r="3"/>
+    <circle cx="100" cy="500" r="3"/>
+    <circle cx="720" cy="520" r="3"/>
+  </g>
+
+  <!-- Sagoma testa/profilo -->
+  <g transform="translate(400, 320)">
+    <!-- Ombra -->
+    <path d="M -110 -140 Q -160 -130 -170 -60 Q -175 0 -160 60 Q -140 130 -80 150 L -80 180 L 60 180 L 60 140 Q 120 100 140 20 Q 160 -80 110 -140 Q 60 -180 -10 -170 Q -80 -160 -110 -140 Z" fill="#1a1a1a" opacity="0.08" transform="translate(8,8)"/>
+    
+    <!-- Profilo testa -->
+    <path d="M -110 -140 Q -160 -130 -170 -60 Q -175 0 -160 60 Q -140 130 -80 150 L -80 180 L 60 180 L 60 140 Q 120 100 140 20 Q 160 -80 110 -140 Q 60 -180 -10 -170 Q -80 -160 -110 -140 Z" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+
+    <!-- Riflesso luce -->
+    <path d="M -100 -110 Q -130 -80 -135 -30" stroke="#00c896" stroke-width="4" fill="none" opacity="0.3" stroke-linecap="round"/>
+
+    <!-- Pensieri/sinapsi dentro (cerchi connessi) -->
+    <g>
+      <circle cx="-60" cy="-70" r="8" fill="#00c896"/>
+      <circle cx="20" cy="-90" r="10" fill="#ff4d4d"/>
+      <circle cx="60" cy="-30" r="8" fill="#3ba3ff"/>
+      <circle cx="-30" cy="-20" r="10" fill="#00c896"/>
+      <circle cx="40" cy="30" r="8" fill="#ff4d4d"/>
+      <circle cx="-50" cy="40" r="8" fill="#3ba3ff"/>
+      
+      <line x1="-60" y1="-70" x2="20" y2="-90" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+      <line x1="20" y1="-90" x2="60" y2="-30" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+      <line x1="60" y1="-30" x2="40" y2="30" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+      <line x1="40" y1="30" x2="-50" y2="40" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+      <line x1="-50" y1="40" x2="-30" y2="-20" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+      <line x1="-30" y1="-20" x2="-60" y2="-70" stroke="#1a1a1a" stroke-width="1.5" opacity="0.4"/>
+      <line x1="-30" y1="-20" x2="20" y2="-90" stroke="#1a1a1a" stroke-width="1" opacity="0.25"/>
+      <line x1="-30" y1="-20" x2="60" y2="-30" stroke="#1a1a1a" stroke-width="1" opacity="0.25"/>
+    </g>
+  </g>
+
+  <!-- Bolle di pensiero all'esterno -->
+  <circle cx="630" cy="180" r="20" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+  <circle cx="600" cy="220" r="12" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+  <circle cx="578" cy="250" r="7" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="1.5"/>
+
+  <!-- Cuore piccolo -->
+  <g transform="translate(680, 170)">
+    <path d="M 0 0 L -8 -8 Q -16 -16 -8 -22 Q 0 -25 0 -17 Q 0 -25 8 -22 Q 16 -16 8 -8 Z" fill="#ff4d4d"/>
+  </g>
+</svg>

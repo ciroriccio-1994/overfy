@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#FFE5E5"/>
+
+  <!-- Pattern dotted bg -->
+  <g fill="#ff4d4d" opacity="0.12">
+    <circle cx="80" cy="80" r="3"/>
+    <circle cx="180" cy="120" r="3"/>
+    <circle cx="280" cy="80" r="3"/>
+    <circle cx="720" cy="180" r="3"/>
+    <circle cx="680" cy="100" r="3"/>
+    <circle cx="620" cy="60" r="3"/>
+    <circle cx="100" cy="500" r="3"/>
+    <circle cx="200" cy="540" r="3"/>
+    <circle cx="720" cy="520" r="3"/>
+    <circle cx="620" cy="560" r="3"/>
+  </g>
+
+  <!-- Wavy motion lines dietro il manubrio -->
+  <g stroke="#ff4d4d" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.25">
+    <path d="M 140 220 L 200 220"/>
+    <path d="M 140 280 L 220 280"/>
+    <path d="M 140 340 L 200 340"/>
+    <path d="M 140 400 L 220 400"/>
+  </g>
+
+  <!-- Dumbbell (manubrio) grande al centro -->
+  <!-- Peso sinistro -->
+  <g>
+    <rect x="220" y="210" width="60" height="180" rx="10" fill="#1a1a1a"/>
+    <rect x="235" y="195" width="30" height="210" rx="6" fill="#1a1a1a"/>
+    <rect x="240" y="220" width="20" height="160" rx="4" fill="#ff4d4d" opacity="0.7"/>
+  </g>
+
+  <!-- Barra centrale -->
+  <rect x="280" y="288" width="240" height="24" rx="4" fill="#1a1a1a"/>
+  <rect x="280" y="293" width="240" height="6" rx="2" fill="#ff4d4d" opacity="0.5"/>
+
+  <!-- Peso destro -->
+  <g>
+    <rect x="520" y="210" width="60" height="180" rx="10" fill="#1a1a1a"/>
+    <rect x="535" y="195" width="30" height="210" rx="6" fill="#1a1a1a"/>
+    <rect x="540" y="220" width="20" height="160" rx="4" fill="#ff4d4d" opacity="0.7"/>
+  </g>
+
+  <!-- Wavy motion lines dietro il manubrio destro -->
+  <g stroke="#ff4d4d" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.25">
+    <path d="M 600 220 L 660 220"/>
+    <path d="M 580 280 L 660 280"/>
+    <path d="M 600 340 L 660 340"/>
+    <path d="M 580 400 L 660 400"/>
+  </g>
+
+  <!-- Numero peso sovrapposto -->
+  <text x="400" y="500" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="400" fill="#1a1a1a" font-style="italic">12kg</text>
+  
+  <!-- Piccoli accent triangolari -->
+  <polygon points="120,120 140,130 120,140" fill="#ff4d4d" opacity="0.4"/>
+  <polygon points="680,440 700,450 680,460" fill="#ff4d4d" opacity="0.4"/>
+</svg>

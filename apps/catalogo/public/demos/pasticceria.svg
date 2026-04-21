@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <!-- Background mint-soft -->
+  <rect width="800" height="600" fill="#D1F5EA"/>
+
+  <!-- Pattern puntini -->
+  <g fill="#00c896" opacity="0.15">
+    <circle cx="80" cy="80" r="3"/>
+    <circle cx="180" cy="120" r="3"/>
+    <circle cx="720" cy="180" r="3"/>
+    <circle cx="680" cy="100" r="3"/>
+    <circle cx="620" cy="60" r="3"/>
+    <circle cx="100" cy="520" r="3"/>
+    <circle cx="200" cy="560" r="3"/>
+    <circle cx="720" cy="540" r="3"/>
+    <circle cx="620" cy="580" r="3"/>
+  </g>
+
+  <!-- Piatto ellittico sotto -->
+  <ellipse cx="400" cy="495" rx="220" ry="25" fill="#1a1a1a" opacity="0.1"/>
+  <ellipse cx="400" cy="490" rx="220" ry="25" fill="#FFFFFF"/>
+  <ellipse cx="400" cy="490" rx="220" ry="25" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- Torta 3 strati -->
+  <!-- Strato 1 (base) -->
+  <rect x="240" y="420" width="320" height="70" rx="6" fill="#FFF5F0"/>
+  <rect x="240" y="420" width="320" height="70" rx="6" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  <!-- Decoro strato 1 -->
+  <g fill="#00c896" opacity="0.7">
+    <circle cx="280" cy="455" r="5"/>
+    <circle cx="330" cy="465" r="5"/>
+    <circle cx="380" cy="450" r="5"/>
+    <circle cx="430" cy="465" r="5"/>
+    <circle cx="480" cy="455" r="5"/>
+    <circle cx="520" cy="465" r="5"/>
+  </g>
+
+  <!-- Panna/crema tra strato 1 e 2 -->
+  <path d="M 270 420 Q 285 410 300 420 Q 315 410 330 420 Q 345 410 360 420 Q 375 410 390 420 Q 405 410 420 420 Q 435 410 450 420 Q 465 410 480 420 Q 495 410 510 420 Q 525 410 530 420 L 530 425 L 270 425 Z" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- Strato 2 (medio) -->
+  <rect x="270" y="340" width="260" height="80" rx="6" fill="#FFE5D4"/>
+  <rect x="270" y="340" width="260" height="80" rx="6" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  
+  <!-- Bordo decorativo strato 2 -->
+  <g stroke="#1a1a1a" stroke-width="1.5" fill="none" opacity="0.4">
+    <path d="M 280 375 L 290 370 L 300 375 L 310 370 L 320 375 L 330 370 L 340 375 L 350 370 L 360 375 L 370 370 L 380 375 L 390 370 L 400 375 L 410 370 L 420 375 L 430 370 L 440 375 L 450 370 L 460 375 L 470 370 L 480 375 L 490 370 L 500 375 L 510 370 L 520 375"/>
+  </g>
+
+  <!-- Panna/crema tra 2 e 3 -->
+  <path d="M 295 340 Q 310 330 325 340 Q 340 330 355 340 Q 370 330 385 340 Q 400 330 415 340 Q 430 330 445 340 Q 460 330 475 340 Q 490 330 505 340 L 505 345 L 295 345 Z" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- Strato 3 (top) -->
+  <rect x="295" y="270" width="210" height="70" rx="6" fill="#FFF5F0"/>
+  <rect x="295" y="270" width="210" height="70" rx="6" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- Topping panna sul top -->
+  <path d="M 320 270 Q 330 250 340 270 Q 350 245 360 270 Q 370 250 380 270 Q 390 245 400 270 Q 410 250 420 270 Q 430 245 440 270 Q 450 250 460 270 Q 470 245 480 270 L 480 275 L 320 275 Z" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+
+  <!-- Ciliegina rossa sopra -->
+  <circle cx="400" cy="250" r="12" fill="#ff4d4d" stroke="#1a1a1a" stroke-width="2"/>
+  <path d="M 400 240 Q 405 225 415 220" stroke="#00c896" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M 412 223 Q 420 220 425 225" stroke="#00c896" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Sparkles intorno -->
+  <g fill="#00c896">
+    <polygon points="180,200 183,208 191,208 184,213 187,221 180,216 173,221 176,213 169,208 177,208" opacity="0.5"/>
+    <polygon points="640,170 643,178 651,178 644,183 647,191 640,186 633,191 636,183 629,178 637,178" opacity="0.5"/>
+    <polygon points="180,380 182,385 187,385 183,388 185,393 180,390 175,393 177,388 173,385 178,385" opacity="0.4"/>
+  </g>
+</svg>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <!-- Background sky-soft -->
+  <rect width="800" height="600" fill="#D6E9FB"/>
+
+  <!-- Pattern puntini -->
+  <g fill="#3ba3ff" opacity="0.15">
+    <circle cx="80" cy="80" r="3"/>
+    <circle cx="180" cy="120" r="3"/>
+    <circle cx="720" cy="180" r="3"/>
+    <circle cx="680" cy="100" r="3"/>
+    <circle cx="100" cy="500" r="3"/>
+    <circle cx="720" cy="520" r="3"/>
+    <circle cx="620" cy="560" r="3"/>
+  </g>
+
+  <!-- Ombra sotto piatto -->
+  <ellipse cx="400" cy="325" rx="220" ry="20" fill="#1a1a1a" opacity="0.12"/>
+
+  <!-- Piatto tondo bianco (fuori) -->
+  <circle cx="400" cy="310" r="220" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="2"/>
+  <circle cx="400" cy="310" r="210" fill="#FFFFFF" stroke="#1a1a1a" stroke-width="1" opacity="0.3"/>
+
+  <!-- Pizza (impasto) -->
+  <circle cx="400" cy="310" r="180" fill="#F4D89E" stroke="#1a1a1a" stroke-width="2"/>
+  
+  <!-- Crosta ombra -->
+  <circle cx="400" cy="310" r="180" fill="none" stroke="#1a1a1a" stroke-width="8" opacity="0.15"/>
+
+  <!-- Sugo pomodoro -->
+  <circle cx="400" cy="310" r="155" fill="#FF7878"/>
+
+  <!-- Mozzarella (chiazze bianche irregolari) -->
+  <g fill="#FFFEF5" stroke="#1a1a1a" stroke-width="1.2" opacity="0.95">
+    <ellipse cx="340" cy="240" rx="28" ry="22"/>
+    <ellipse cx="440" cy="230" rx="32" ry="24"/>
+    <ellipse cx="290" cy="310" rx="25" ry="30"/>
+    <ellipse cx="380" cy="320" rx="30" ry="25"/>
+    <ellipse cx="470" cy="300" rx="28" ry="22"/>
+    <ellipse cx="340" cy="380" rx="26" ry="24"/>
+    <ellipse cx="430" cy="380" rx="30" ry="22"/>
+    <ellipse cx="500" cy="360" rx="22" ry="25"/>
+    <ellipse cx="360" cy="430" rx="24" ry="20"/>
+  </g>
+
+  <!-- Basilico (foglie mint) -->
+  <g fill="#00c896" stroke="#1a1a1a" stroke-width="1.2">
+    <!-- Foglia 1 -->
+    <path d="M 310 270 Q 295 260 292 275 Q 290 290 305 295 Q 318 293 320 278 Z"/>
+    <path d="M 305 270 L 310 290" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+    <!-- Foglia 2 -->
+    <path d="M 490 260 Q 478 250 478 265 Q 480 280 495 282 Q 505 278 502 263 Z"/>
+    <path d="M 490 265 L 492 278" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+    <!-- Foglia 3 -->
+    <path d="M 420 400 Q 408 392 408 405 Q 412 418 425 418 Q 434 414 430 402 Z"/>
+    <path d="M 418 402 L 422 413" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+  </g>
+
+  <!-- Taglio pizza (8 fette - 1 linea per ognuno) -->
+  <g stroke="#1a1a1a" stroke-width="1" opacity="0.25" fill="none">
+    <line x1="400" y1="155" x2="400" y2="465"/>
+    <line x1="245" y1="310" x2="555" y2="310"/>
+    <line x1="290" y1="200" x2="510" y2="420"/>
+    <line x1="510" y1="200" x2="290" y2="420"/>
+  </g>
+
+  <!-- Punta triangolo sky (fetta in evidenza) -->
+  <g>
+    <polygon points="400,310 580,260 580,360" fill="#3ba3ff" opacity="0.08"/>
+  </g>
+
+</svg>
