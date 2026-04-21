@@ -1,8 +1,8 @@
 // apps/catalogo/app/admin/page.tsx
 //
 // Admin dashboard unica. Accessibile solo con is_admin=true.
-// KPI: total users, active subs, MRR €, lead aperti.
-// Tabelle: utenti recenti, lead Su Misura, subscription attive.
+// KPI: total users, active subs, MRR €, lead aperti, callback aperte.
+// Sezioni: callback urgenti (solo se >0), utenti recenti, lead, subscription attive.
 
 import type { Metadata } from 'next';
 import { requireAdmin } from '@/lib/auth-helpers';
@@ -22,11 +22,18 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+/** Lead esteso con i campi callback (non ancora presenti nel tipo DB) */
+export type ExtendedLeadRow = LeadRow & {
+  request_callback?: boolean | null;
+  preferred_time?: string | null;
+};
+
 export interface AdminKPI {
   totalUsers: number;
   activeSubs: number;
   mrrCents: number; // MRR in centesimi € per precisione
   openLeads: number;
+  openCallbacks: number;
 }
 
 export interface AdminUserRow {
@@ -77,14 +84,14 @@ export default async function AdminPage() {
   const subs = (subsRaw as SubscriptionRow[] | null) ?? [];
 
   // ============================================================
-  // LEADS
+  // LEADS (con campi callback estesi)
   // ============================================================
   const { data: leadsRaw } = await admin
     .from('leads')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(100);
-  const leads = (leadsRaw as LeadRow[] | null) ?? [];
+  const leads = (leadsRaw as ExtendedLeadRow[] | null) ?? [];
 
   // ============================================================
   // KPI
@@ -96,7 +103,6 @@ export default async function AdminPage() {
   );
   const activeSubs = activeSubsList.length;
 
-  // MRR: per ogni sub attiva, normalizza a mensile
   let mrrCents = 0;
   for (const sub of activeSubsList) {
     if (!sub.stripe_price_id) continue;
@@ -113,14 +119,23 @@ export default async function AdminPage() {
     ['new', 'contacted', 'qualified'].includes(l.status),
   ).length;
 
-  const kpi: AdminKPI = { totalUsers, activeSubs, mrrCents, openLeads };
+  const openCallbacks = leads.filter(
+    (l) => l.request_callback === true && l.status === 'new',
+  ).length;
+
+  const kpi: AdminKPI = {
+    totalUsers,
+    activeSubs,
+    mrrCents,
+    openLeads,
+    openCallbacks,
+  };
 
   // ============================================================
   // USERS TABLE (con piano se c'è)
   // ============================================================
   const subByUser = new Map<string, SubscriptionRow>();
   for (const sub of subs) {
-    // Preferisci l'attiva più recente
     const existing = subByUser.get(sub.user_id);
     if (!existing) {
       subByUser.set(sub.user_id, sub);

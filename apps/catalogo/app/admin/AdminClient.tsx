@@ -2,14 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { LeadRow, LeadStatus } from '@/types/database';
-import type { AdminKPI, AdminUserRow, AdminSubRow } from './page';
+import type { LeadStatus } from '@/types/database';
+import type {
+  AdminKPI,
+  AdminUserRow,
+  AdminSubRow,
+  ExtendedLeadRow,
+} from './page';
 
 interface Props {
   kpi: AdminKPI;
   users: AdminUserRow[];
   subs: AdminSubRow[];
-  leads: LeadRow[];
+  leads: ExtendedLeadRow[];
 }
 
 const LEAD_STATUSES: LeadStatus[] = [
@@ -28,8 +33,23 @@ const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   lost: 'Perso',
 };
 
+const PREFERRED_TIME_LABELS: Record<string, string> = {
+  today_2h: 'Oggi entro 2h',
+  tomorrow_am: 'Domani mattina',
+  tomorrow_pm: 'Domani pomeriggio',
+  within_3_days: 'Entro 3 giorni',
+};
+
+// Priorità per ordinamento callback (più urgente → più alto)
+const TIME_URGENCY: Record<string, number> = {
+  today_2h: 4,
+  tomorrow_am: 3,
+  tomorrow_pm: 2,
+  within_3_days: 1,
+};
+
 export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
-  const [leads, setLeads] = useState<LeadRow[]>(initialLeads);
+  const [leads, setLeads] = useState<ExtendedLeadRow[]>(initialLeads);
   const [updating, setUpdating] = useState<string | null>(null);
   const [globalErr, setGlobalErr] = useState<string | null>(null);
 
@@ -62,6 +82,17 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
     currency: 'EUR',
   });
 
+  // Callback aperti: request_callback=true e status='new'
+  const callbackLeads = leads
+    .filter((l) => l.request_callback === true && l.status === 'new')
+    .sort((a, b) => {
+      const urgencyA = TIME_URGENCY[a.preferred_time || 'today_2h'] ?? 0;
+      const urgencyB = TIME_URGENCY[b.preferred_time || 'today_2h'] ?? 0;
+      if (urgencyA !== urgencyB) return urgencyB - urgencyA; // urgenza desc
+      // Stessa urgenza → più recente prima
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
   return (
     <>
       {/* HEADER */}
@@ -83,11 +114,17 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
       </div>
 
       {/* KPI */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
         <KpiCard label="Utenti totali" value={kpi.totalUsers.toString()} accent="ink" />
         <KpiCard label="Abbonamenti attivi" value={kpi.activeSubs.toString()} accent="mint" />
         <KpiCard label="MRR" value={mrrEur} accent="sky" />
-        <KpiCard label="Lead aperti" value={kpi.openLeads.toString()} accent="coral" />
+        <KpiCard label="Lead aperti" value={kpi.openLeads.toString()} accent="ink" />
+        <KpiCard
+          label="Callback aperte"
+          value={kpi.openCallbacks.toString()}
+          accent="coral"
+          pulse={kpi.openCallbacks > 0}
+        />
       </div>
 
       {globalErr && (
@@ -97,6 +134,56 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
         >
           {globalErr}
         </div>
+      )}
+
+      {/* CALLBACK URGENTI — visibile solo se ce ne sono */}
+      {callbackLeads.length > 0 && (
+        <>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes overfy-urgent-pulse {
+                  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+                  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+                }
+                .overfy-urgent-dot {
+                  animation: overfy-urgent-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+              `,
+            }}
+          />
+          <section
+            className="mb-8 rounded-2xl p-6 border-2"
+            style={{
+              borderColor: '#dc2626',
+              background:
+                'linear-gradient(135deg, rgba(220, 38, 38, 0.06) 0%, var(--color-paper) 60%)',
+            }}
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <span className="inline-block w-2 h-2 rounded-full overfy-urgent-dot" style={{ background: '#dc2626' }}></span>
+              <div className="text-sm font-semibold" style={{ color: '#dc2626' }}>
+                🔥 Callback richieste — da chiamare
+              </div>
+              <span
+                className="text-[10px] font-mono px-2 py-0.5 rounded-full"
+                style={{ background: '#dc2626', color: '#ffffff' }}
+              >
+                {callbackLeads.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {callbackLeads.map((lead) => (
+                <CallbackCard
+                  key={lead.id}
+                  lead={lead}
+                  updating={updating === lead.id}
+                  onMarkContacted={() => changeLeadStatus(lead.id, 'contacted')}
+                />
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
       {/* UTENTI RECENTI */}
@@ -142,9 +229,7 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
                     <Td>{u.company_name || '—'}</Td>
                     <Td>
                       {u.plan_tier ? (
-                        <span className="text-xs font-mono">
-                          {u.plan_tier}
-                        </span>
+                        <span className="text-xs font-mono">{u.plan_tier}</span>
                       ) : (
                         <span className="text-xs text-[var(--color-muted)]">—</span>
                       )}
@@ -165,13 +250,13 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
         )}
       </Section>
 
-      {/* LEAD SU MISURA */}
+      {/* LEAD */}
       <Section title="Lead" count={leads.length}>
         {leads.length === 0 ? (
           <EmptyRow text="Nessun lead ancora." />
         ) : (
           <div className="overflow-x-auto -mx-6 md:mx-0">
-            <table className="w-full text-sm min-w-[800px]">
+            <table className="w-full text-sm min-w-[820px]">
               <thead>
                 <tr className="text-left text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] border-b border-[var(--color-line)]">
                   <Th>Contatto</Th>
@@ -186,7 +271,18 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
                 {leads.map((l) => (
                   <tr key={l.id} className="border-b border-[var(--color-line)]">
                     <Td>
-                      <div className="text-[var(--color-ink)]">{l.full_name || '—'}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[var(--color-ink)]">{l.full_name || '—'}</span>
+                        {l.request_callback && (
+                          <span
+                            className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded whitespace-nowrap"
+                            style={{ background: '#dc2626', color: '#ffffff' }}
+                            title={l.preferred_time ? PREFERRED_TIME_LABELS[l.preferred_time] || '' : ''}
+                          >
+                            🔥 Call
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs font-mono">
                         <a
                           href={`mailto:${l.email}`}
@@ -197,7 +293,16 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
                       </div>
                       {l.phone && (
                         <div className="text-xs font-mono text-[var(--color-muted)]">
-                          {l.phone}
+                          {l.request_callback ? (
+                            <a
+                              href={`tel:${l.phone.replace(/\s/g, '')}`}
+                              className="hover:text-[var(--color-ink)] underline"
+                            >
+                              {l.phone}
+                            </a>
+                          ) : (
+                            l.phone
+                          )}
                         </div>
                       )}
                     </Td>
@@ -223,6 +328,11 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
                       {l.interest_tier && (
                         <div className="text-[10px] font-mono text-[var(--color-ink-soft)] mt-0.5">
                           → {l.interest_tier}
+                        </div>
+                      )}
+                      {l.request_callback && l.preferred_time && (
+                        <div className="text-[10px] font-mono mt-0.5" style={{ color: '#dc2626' }}>
+                          ⏰ {PREFERRED_TIME_LABELS[l.preferred_time] || l.preferred_time}
                         </div>
                       )}
                     </Td>
@@ -323,6 +433,112 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
 }
 
 /* =============================================================== */
+/* CALLBACK CARD                                                   */
+/* =============================================================== */
+
+function CallbackCard({
+  lead,
+  updating,
+  onMarkContacted,
+}: {
+  lead: ExtendedLeadRow;
+  updating: boolean;
+  onMarkContacted: () => void;
+}) {
+  const timeLabel = lead.preferred_time
+    ? PREFERRED_TIME_LABELS[lead.preferred_time] || lead.preferred_time
+    : 'Subito';
+
+  const isTopUrgent = lead.preferred_time === 'today_2h';
+
+  return (
+    <div
+      className="bg-[var(--color-paper)] border rounded-xl p-4 flex items-start gap-4 flex-col sm:flex-row"
+      style={{
+        borderColor: isTopUrgent ? '#dc2626' : 'var(--color-line)',
+        borderWidth: isTopUrgent ? '2px' : '1px',
+      }}
+    >
+      <div className="flex-1 min-w-0 w-full">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <span className="font-medium text-[var(--color-ink)]">
+            {lead.full_name || lead.email}
+          </span>
+          <span
+            className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap"
+            style={{ background: '#dc2626', color: '#ffffff' }}
+          >
+            ⏰ {timeLabel}
+          </span>
+          {lead.company_name && (
+            <span className="text-xs text-[var(--color-ink-soft)]">
+              · {lead.company_name}
+            </span>
+          )}
+        </div>
+        <div className="text-xs font-mono text-[var(--color-ink-soft)]">
+          <a
+            href={`mailto:${lead.email}`}
+            className="hover:text-[var(--color-ink)] underline"
+          >
+            {lead.email}
+          </a>
+          {lead.phone && (
+            <>
+              {' · '}
+              <a
+                href={`tel:${lead.phone.replace(/\s/g, '')}`}
+                className="hover:text-[var(--color-ink)] underline"
+              >
+                {lead.phone}
+              </a>
+            </>
+          )}
+        </div>
+        {lead.message && (
+          <div
+            className="mt-2 text-xs text-[var(--color-ink-soft)] leading-relaxed italic"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            &ldquo;{lead.message}&rdquo;
+          </div>
+        )}
+        <div className="text-[10px] font-mono text-[var(--color-muted)] mt-2">
+          ricevuto {timeAgo(lead.created_at)}
+        </div>
+      </div>
+
+      <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
+        {lead.phone && (
+          <a
+            href={`tel:${lead.phone.replace(/\s/g, '')}`}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition hover:opacity-90 flex-1 sm:flex-initial"
+            style={{ background: '#dc2626', color: '#ffffff' }}
+          >
+            📞 Chiama
+          </a>
+        )}
+        <button
+          type="button"
+          onClick={onMarkContacted}
+          disabled={updating}
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition disabled:opacity-60 whitespace-nowrap flex-1 sm:flex-initial"
+        >
+          {updating ? '...' : '✓ Contattato'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =============================================================== */
+/* PRIMITIVES                                                      */
+/* =============================================================== */
 
 function Section({
   title,
@@ -352,21 +568,37 @@ function KpiCard({
   label,
   value,
   accent,
+  pulse = false,
 }: {
   label: string;
   value: string;
   accent: 'ink' | 'mint' | 'sky' | 'coral';
+  pulse?: boolean;
 }) {
   const accentMap = {
     ink: 'var(--color-ink)',
     mint: 'var(--color-mint-ink)',
     sky: 'var(--color-sky-ink)',
-    coral: 'var(--color-coral-ink)',
+    coral: '#dc2626',
   };
   return (
-    <div className="bg-[var(--color-paper)] border border-[var(--color-line)] rounded-2xl p-5">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">
-        {label}
+    <div
+      className="bg-[var(--color-paper)] border rounded-2xl p-5"
+      style={{
+        borderColor: pulse ? '#dc2626' : 'var(--color-line)',
+        borderWidth: pulse ? '2px' : '1px',
+      }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+          {label}
+        </div>
+        {pulse && (
+          <span
+            className="inline-block w-1.5 h-1.5 rounded-full overfy-urgent-dot"
+            style={{ background: '#dc2626' }}
+          ></span>
+        )}
       </div>
       <div
         className="font-display text-4xl leading-none tracking-tight"
@@ -415,4 +647,18 @@ function formatDate(iso: string): string {
     month: 'short',
     year: 'numeric',
   });
+}
+
+function timeAgo(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  if (diffMs < 0) return 'ora';
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'ora';
+  if (diffMin < 60) return `${diffMin} min fa`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h fa`;
+  const diffD = Math.floor(diffH / 24);
+  return `${diffD}g fa`;
 }
