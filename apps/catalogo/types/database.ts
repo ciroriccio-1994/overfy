@@ -1,11 +1,6 @@
 // apps/catalogo/types/database.ts
 //
 // Tipi TypeScript per lo schema Supabase Overfy.
-// Tenuti sincronizzati a mano con SUPABASE_SCHEMA.sql + SUPABASE_PATCH_2.sql +
-// SUPABASE_PATCH_3.sql.
-//
-// Se in futuro vuoi generarli automaticamente:
-//   npx supabase gen types typescript --project-id ukespvqmqrglsexcmrzt > types/database.ts
 
 export type PlanTier = 'essenziale' | 'professionale' | 'business' | 'su_misura';
 
@@ -21,7 +16,13 @@ export type SubscriptionStatus =
 
 export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
 
-export type BillingInterval = 'month' | 'year';
+/**
+ * Intervalli di fatturazione supportati.
+ * - month: mensile (pieno prezzo)
+ * - quarter: trimestrale (~10% sconto)
+ * - year: annuale (~17% sconto)
+ */
+export type BillingInterval = 'month' | 'quarter' | 'year';
 
 // ---------------------------------------------------------------------------
 // Row types
@@ -36,9 +37,9 @@ export interface ProfileRow {
   vat_number: string | null;
   fiscal_code: string | null;
   country: string | null;
-  stripe_customer_id: string | null;      // Patch 2
-  terms_accepted_at: string | null;        // Patch 2
-  is_admin: boolean;                        // Patch 3
+  stripe_customer_id: string | null;
+  terms_accepted_at: string | null;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -83,7 +84,7 @@ export interface LeadRow {
 }
 
 // ---------------------------------------------------------------------------
-// Insert / Update types (per operazioni di scrittura)
+// Insert / Update types
 // ---------------------------------------------------------------------------
 
 export type ProfileInsert = Omit<ProfileRow, 'created_at' | 'updated_at' | 'is_admin'> & {
@@ -111,7 +112,7 @@ export type LeadInsert = Omit<LeadRow, 'id' | 'status' | 'metadata' | 'created_a
 };
 
 // ---------------------------------------------------------------------------
-// Database type (compatibile con @supabase/supabase-js generics)
+// Database type
 // ---------------------------------------------------------------------------
 
 export interface Database {

@@ -5,10 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-/**
- * CSS animazioni + focus states.
- * Definito una sola volta — iniettato tramite <style> nel componente root.
- */
 const ANIMATION_CSS = `
 @keyframes overfy-stagger-in {
   0% { opacity: 0; transform: translateY(14px); }
@@ -34,9 +30,7 @@ const ANIMATION_CSS = `
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(10, 10, 10, 0.18);
 }
-.overfy-btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
+.overfy-btn-primary:active:not(:disabled) { transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) {
   .overfy-anim-item { animation: none !important; opacity: 1 !important; transform: none !important; }
   .overfy-btn-primary:hover { transform: none !important; }
@@ -52,12 +46,12 @@ export function RegistratiForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [accepted, setAccepted] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedWaiver, setAcceptedWaiver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
-  // Reset errore "già registrato" se l'utente cambia email
   useEffect(() => {
     if (alreadyRegistered) setAlreadyRegistered(false);
   }, [email]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -71,8 +65,12 @@ export function RegistratiForm() {
       setError('La password deve avere almeno 8 caratteri.');
       return;
     }
-    if (!accepted) {
-      setError('Devi accettare i termini per continuare.');
+    if (!acceptedTerms) {
+      setError('Devi accettare i Termini di servizio per continuare.');
+      return;
+    }
+    if (!acceptedWaiver) {
+      setError('Devi confermare la richiesta di avvio immediato del servizio per continuare.');
       return;
     }
 
@@ -94,7 +92,11 @@ export function RegistratiForm() {
       email: normalizedEmail,
       password,
       options: {
-        data: { full_name: fullName.trim() || null },
+        data: {
+          full_name: fullName.trim() || null,
+          terms_accepted: true,
+          recess_waived: true,
+        },
         emailRedirectTo,
       },
     });
@@ -114,8 +116,6 @@ export function RegistratiForm() {
       return;
     }
 
-    // Supabase con "Prevent email enumeration" ON non restituisce errore quando
-    // l'email è già registrata — ma la risposta ha `data.user.identities = []`.
     if (
       data?.user &&
       Array.isArray(data.user.identities) &&
@@ -131,7 +131,6 @@ export function RegistratiForm() {
     router.push(`/verifica-email?${verifyQs.toString()}`);
   }
 
-  // Delay sequence per stagger animation
   const d = (idx: number) => ({ animationDelay: `${260 + idx * 80}ms` });
 
   return (
@@ -147,7 +146,8 @@ export function RegistratiForm() {
             style={{ ...d(0), background: 'var(--color-mint-soft)', color: 'var(--color-mint-ink)' }}
           >
             Stai attivando il piano <strong>{plan.charAt(0).toUpperCase() + plan.slice(1)}</strong>
-            {interval === 'year' ? ' (annuale)' : ' (mensile)'}. Dopo la conferma email procederai al pagamento.
+            {interval === 'year' ? ' (annuale)' : interval === 'quarter' ? ' (trimestrale)' : ' (mensile)'}.
+            Dopo la conferma email procederai al pagamento.
           </div>
         )}
 
@@ -197,15 +197,41 @@ export function RegistratiForm() {
             />
           </div>
 
+          {/* CHECKBOX 1 — Accettazione Termini + Privacy */}
           <label className="overfy-anim-item flex items-start gap-3 cursor-pointer" style={d(3)}>
             <input
               type="checkbox"
-              checked={accepted}
-              onChange={(e) => setAccepted(e.target.checked)}
-              className="mt-1 h-4 w-4 accent-[var(--color-mint-ink)]"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 h-4 w-4 accent-[var(--color-mint-ink)] shrink-0"
             />
             <span className="text-xs text-[var(--color-ink-soft)] leading-relaxed">
-              Accetto i termini di servizio e l&apos;informativa privacy di Overfy.
+              Dichiaro di aver letto e accettato i{' '}
+              <Link href="/termini" target="_blank" className="text-[var(--color-ink)] underline">
+                Termini di servizio
+              </Link>
+              {' '}e l&apos;{' '}
+              <Link href="/privacy" target="_blank" className="text-[var(--color-ink)] underline">
+                Informativa privacy
+              </Link>
+              {' '}di Overfy.
+            </span>
+          </label>
+
+          {/* CHECKBOX 2 — Rinuncia esplicita al diritto di recesso (art. 59 lett. o) Cod. Cons.) */}
+          <label className="overfy-anim-item flex items-start gap-3 cursor-pointer" style={d(4)}>
+            <input
+              type="checkbox"
+              checked={acceptedWaiver}
+              onChange={(e) => setAcceptedWaiver(e.target.checked)}
+              className="mt-1 h-4 w-4 accent-[var(--color-mint-ink)] shrink-0"
+            />
+            <span className="text-xs text-[var(--color-ink-soft)] leading-relaxed">
+              Chiedo espressamente l&apos;<strong>avvio immediato del servizio</strong> e riconosco, ai sensi dell&apos;art. 59 lett. o) del Codice del Consumo, di{' '}
+              <strong>perdere il diritto di recesso</strong> di 14 giorni una volta che il servizio sia stato interamente erogato.{' '}
+              <Link href="/rimborsi" target="_blank" className="text-[var(--color-ink)] underline">
+                Dettagli policy rimborsi →
+              </Link>
             </span>
           </label>
 
@@ -255,12 +281,12 @@ export function RegistratiForm() {
             type="submit"
             disabled={loading || alreadyRegistered}
             className="overfy-btn-primary overfy-anim-item w-full bg-[var(--color-ink)] text-[var(--color-paper)] py-4 rounded-full text-sm font-medium disabled:opacity-60"
-            style={d(4)}
+            style={d(5)}
           >
             {loading ? 'Creo account…' : 'Crea account →'}
           </button>
 
-          <p className="overfy-anim-item text-center text-xs text-[var(--color-ink-soft)]" style={d(5)}>
+          <p className="overfy-anim-item text-center text-xs text-[var(--color-ink-soft)]" style={d(6)}>
             Hai già un account?{' '}
             <Link href="/login" className="text-[var(--color-ink)] underline">
               Accedi

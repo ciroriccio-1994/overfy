@@ -1,28 +1,27 @@
 // apps/catalogo/lib/plans.ts
 //
 // Mapping centrale tra piani Overfy e price IDs Stripe.
-// Single source of truth: pricing UI, checkout API e webhook
-// leggono da qui per evitare stringhe hardcodate sparse.
+// Supporta 3 intervalli di fatturazione: month, quarter, year.
 
 import type { PlanTier, BillingInterval } from '@/types/database';
 
 export type PaidPlanTier = Exclude<PlanTier, 'su_misura'>;
 
+interface PriceSlot {
+  priceId: string | null;
+  amountEur: number;
+}
+
 export interface PlanConfig {
   tier: PlanTier;
-  name: string;                 // nome UI
-  monthly: {
-    priceId: string | null;
-    amountEur: number;
-  } | null;
-  yearly: {
-    priceId: string | null;
-    amountEur: number;
-  } | null;
+  name: string;
+  monthly: PriceSlot | null;
+  quarterly: PriceSlot | null;
+  yearly: PriceSlot | null;
   color: 'coral' | 'mint' | 'sky' | 'ink';
   chatbot: 'preimpostato' | 'custom';
-  highlight?: boolean;          // per il piano "⭐ Professionale"
-  isQuoteOnly?: boolean;        // true per Su Misura
+  highlight?: boolean;
+  isQuoteOnly?: boolean;
 }
 
 export const PLANS: Record<PlanTier, PlanConfig> = {
@@ -32,6 +31,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     monthly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ESSENZIALE_MONTHLY ?? null,
       amountEur: 49.99,
+    },
+    quarterly: {
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ESSENZIALE_QUARTERLY ?? null,
+      amountEur: 134.99,
     },
     yearly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ESSENZIALE_YEARLY ?? null,
@@ -46,6 +49,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     monthly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONALE_MONTHLY ?? null,
       amountEur: 129.99,
+    },
+    quarterly: {
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONALE_QUARTERLY ?? null,
+      amountEur: 350.99,
     },
     yearly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONALE_YEARLY ?? null,
@@ -62,6 +69,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY ?? null,
       amountEur: 249.99,
     },
+    quarterly: {
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_QUARTERLY ?? null,
+      amountEur: 674.99,
+    },
     yearly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_YEARLY ?? null,
       amountEur: 2489.99,
@@ -73,6 +84,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     tier: 'su_misura',
     name: 'Su Misura',
     monthly: null,
+    quarterly: null,
     yearly: null,
     color: 'ink',
     chatbot: 'custom',
@@ -82,7 +94,6 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
 
 /**
  * Dato un priceId Stripe restituisce il tier + intervallo di fatturazione.
- * Usato dal webhook per mappare subscription Stripe → riga DB.
  */
 export function resolvePriceId(priceId: string): {
   tier: PaidPlanTier;
@@ -91,6 +102,9 @@ export function resolvePriceId(priceId: string): {
   for (const plan of Object.values(PLANS)) {
     if (plan.monthly?.priceId === priceId) {
       return { tier: plan.tier as PaidPlanTier, interval: 'month' };
+    }
+    if (plan.quarterly?.priceId === priceId) {
+      return { tier: plan.tier as PaidPlanTier, interval: 'quarter' };
     }
     if (plan.yearly?.priceId === priceId) {
       return { tier: plan.tier as PaidPlanTier, interval: 'year' };
@@ -101,7 +115,6 @@ export function resolvePriceId(priceId: string): {
 
 /**
  * Dato un tier + intervallo restituisce il priceId Stripe.
- * Usato dall'API checkout per costruire la sessione.
  */
 export function getPriceId(
   tier: PaidPlanTier,
@@ -109,7 +122,37 @@ export function getPriceId(
 ): string | null {
   const plan = PLANS[tier];
   if (!plan) return null;
-  return interval === 'month' ? plan.monthly?.priceId ?? null : plan.yearly?.priceId ?? null;
+  switch (interval) {
+    case 'month':
+      return plan.monthly?.priceId ?? null;
+    case 'quarter':
+      return plan.quarterly?.priceId ?? null;
+    case 'year':
+      return plan.yearly?.priceId ?? null;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Dato un tier + intervallo restituisce lo slot con prezzo e ID.
+ */
+export function getPlanSlot(
+  tier: PaidPlanTier,
+  interval: BillingInterval,
+): PriceSlot | null {
+  const plan = PLANS[tier];
+  if (!plan) return null;
+  switch (interval) {
+    case 'month':
+      return plan.monthly;
+    case 'quarter':
+      return plan.quarterly;
+    case 'year':
+      return plan.yearly;
+    default:
+      return null;
+  }
 }
 
 /**
@@ -120,3 +163,13 @@ export const PAID_PLANS: PaidPlanTier[] = ['essenziale', 'professionale', 'busin
 export function isPaidPlan(tier: string): tier is PaidPlanTier {
   return PAID_PLANS.includes(tier as PaidPlanTier);
 }
+
+/**
+ * Divisori per normalizzare un prezzo a "equivalente mensile".
+ * Usato per calcoli MRR e per mostrare "€X/mese" in UI.
+ */
+export const INTERVAL_MONTHS: Record<BillingInterval, number> = {
+  month: 1,
+  quarter: 3,
+  year: 12,
+};

@@ -1,11 +1,7 @@
 // apps/catalogo/app/api/stripe/checkout/route.ts
 //
 // Crea una Stripe Checkout Session per l'utente autenticato.
-// Chiamato da Pricing al click su "Scegli Essenziale/Pro/Business".
-//
-// Fix 2026-04-21: aggiunto customer_update: { name: 'auto', address: 'auto' }
-// perché tax_id_collection richiede che Stripe possa aggiornare il customer
-// esistente con i dati che il cliente inserisce in fase di checkout.
+// Supporta intervalli: month, quarter, year.
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -15,6 +11,8 @@ import { getPriceId, isPaidPlan, PAID_PLANS, type PaidPlanTier } from '@/lib/pla
 import type { BillingInterval } from '@/types/database';
 
 export const runtime = 'nodejs';
+
+const VALID_INTERVALS: BillingInterval[] = ['month', 'quarter', 'year'];
 
 export async function POST(request: Request) {
   try {
@@ -28,9 +26,9 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-    if (interval !== 'month' && interval !== 'year') {
+    if (!interval || !VALID_INTERVALS.includes(interval as BillingInterval)) {
       return NextResponse.json(
-        { error: 'Intervallo non valido. Deve essere "month" o "year".' },
+        { error: 'Intervallo non valido. Deve essere "month", "quarter" o "year".' },
         { status: 400 },
       );
     }
@@ -38,7 +36,7 @@ export async function POST(request: Request) {
     const priceId = getPriceId(tier as PaidPlanTier, interval as BillingInterval);
     if (!priceId) {
       return NextResponse.json(
-        { error: 'Price ID non configurato per questo piano.' },
+        { error: 'Price ID non configurato per questo piano/intervallo.' },
         { status: 500 },
       );
     }
@@ -92,12 +90,21 @@ export async function POST(request: Request) {
       allow_promotion_codes: true,
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
-      // Richiesto quando si passa un customer esistente + tax_id_collection.
-      // Permette a Stripe di aggiornare name e address del customer con i
-      // valori inseriti nel form di checkout.
       customer_update: {
         name: 'auto',
         address: 'auto',
+      },
+      // Consent al checkout: ai sensi dell'art. 59 lett. o) Cod. Cons., Stripe
+      // mostra un testo di conferma che sarà richiesto prima del pagamento.
+      // Protegge da richieste di rimborso post-erogazione.
+      consent_collection: {
+        terms_of_service: 'required',
+      },
+      custom_text: {
+        terms_of_service_acceptance: {
+          message:
+            'Accettando i [Termini di servizio](https://overfydigital.com/termini) chiedo l\'avvio immediato del servizio di digitalizzazione e riconosco, ai sensi dell\'art. 59 lett. o) del Codice del Consumo, di perdere il diritto di recesso di 14 giorni una volta completata l\'erogazione. Vedi [policy rimborsi](https://overfydigital.com/rimborsi).',
+        },
       },
       subscription_data: {
         metadata: {

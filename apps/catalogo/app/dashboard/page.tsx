@@ -37,7 +37,7 @@ export interface PlanInfo {
   tier: string;
   name: string;
   amountEur: number | null;
-  interval: 'month' | 'year' | null;
+  interval: 'month' | 'quarter' | 'year' | null;
 }
 
 export default async function DashboardPage() {
@@ -64,7 +64,12 @@ export default async function DashboardPage() {
     const resolved = resolvePriceId(activeSub.stripe_price_id);
     if (resolved) {
       const planCfg = PLANS[resolved.tier];
-      const slot = resolved.interval === 'month' ? planCfg.monthly : planCfg.yearly;
+      const slot =
+        resolved.interval === 'month'
+          ? planCfg.monthly
+          : resolved.interval === 'quarter'
+            ? planCfg.quarterly
+            : planCfg.yearly;
       planInfo = {
         tier: resolved.tier,
         name: planCfg.name,

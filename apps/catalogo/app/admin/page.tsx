@@ -1,13 +1,14 @@
 // apps/catalogo/app/admin/page.tsx
 //
-// Admin dashboard unica. Accessibile solo con is_admin=true.
-// KPI: total users, active subs, MRR €, lead aperti, callback aperte.
-// Sezioni: callback urgenti (solo se >0), utenti recenti, lead, subscription attive.
+// Admin dashboard. MRR calcolato normalizzando ogni intervallo a mensile:
+//   mensile: importo diretto
+//   trimestrale: importo / 3
+//   annuale: importo / 12
 
 import type { Metadata } from 'next';
 import { requireAdmin } from '@/lib/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { PLANS, resolvePriceId } from '@/lib/plans';
+import { PLANS, resolvePriceId, INTERVAL_MONTHS } from '@/lib/plans';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { AdminClient } from './AdminClient';
@@ -22,7 +23,6 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-/** Lead esteso con i campi callback (non ancora presenti nel tipo DB) */
 export type ExtendedLeadRow = LeadRow & {
   request_callback?: boolean | null;
   preferred_time?: string | null;
@@ -31,7 +31,7 @@ export type ExtendedLeadRow = LeadRow & {
 export interface AdminKPI {
   totalUsers: number;
   activeSubs: number;
-  mrrCents: number; // MRR in centesimi € per precisione
+  mrrCents: number;
   openLeads: number;
   openCallbacks: number;
 }
@@ -64,9 +64,6 @@ export default async function AdminPage() {
 
   const admin = createAdminClient();
 
-  // ============================================================
-  // PROFILES (ordinati desc per data)
-  // ============================================================
   const { data: profilesRaw } = await admin
     .from('profiles')
     .select('*')
@@ -74,18 +71,12 @@ export default async function AdminPage() {
     .limit(100);
   const profiles = (profilesRaw as ProfileRow[] | null) ?? [];
 
-  // ============================================================
-  // SUBSCRIPTIONS
-  // ============================================================
   const { data: subsRaw } = await admin
     .from('subscriptions')
     .select('*')
     .order('created_at', { ascending: false });
   const subs = (subsRaw as SubscriptionRow[] | null) ?? [];
 
-  // ============================================================
-  // LEADS (con campi callback estesi)
-  // ============================================================
   const { data: leadsRaw } = await admin
     .from('leads')
     .select('*')
@@ -93,9 +84,6 @@ export default async function AdminPage() {
     .limit(100);
   const leads = (leadsRaw as ExtendedLeadRow[] | null) ?? [];
 
-  // ============================================================
-  // KPI
-  // ============================================================
   const totalUsers = profiles.length;
 
   const activeSubsList = subs.filter((s) =>
@@ -103,16 +91,21 @@ export default async function AdminPage() {
   );
   const activeSubs = activeSubsList.length;
 
+  // MRR: normalizza ogni intervallo a mensile (mese=1, trim=3, anno=12)
   let mrrCents = 0;
   for (const sub of activeSubsList) {
     if (!sub.stripe_price_id) continue;
     const resolved = resolvePriceId(sub.stripe_price_id);
     if (!resolved) continue;
     const plan = PLANS[resolved.tier];
-    const slot = resolved.interval === 'month' ? plan.monthly : plan.yearly;
+    let slot;
+    if (resolved.interval === 'month') slot = plan.monthly;
+    else if (resolved.interval === 'quarter') slot = plan.quarterly;
+    else if (resolved.interval === 'year') slot = plan.yearly;
     if (!slot) continue;
     const cents = Math.round(slot.amountEur * 100);
-    mrrCents += resolved.interval === 'month' ? cents : Math.round(cents / 12);
+    const months = INTERVAL_MONTHS[resolved.interval];
+    mrrCents += Math.round(cents / months);
   }
 
   const openLeads = leads.filter((l) =>
@@ -131,9 +124,6 @@ export default async function AdminPage() {
     openCallbacks,
   };
 
-  // ============================================================
-  // USERS TABLE (con piano se c'è)
-  // ============================================================
   const subByUser = new Map<string, SubscriptionRow>();
   for (const sub of subs) {
     const existing = subByUser.get(sub.user_id);
@@ -161,9 +151,6 @@ export default async function AdminPage() {
     };
   });
 
-  // ============================================================
-  // ACTIVE SUBS TABLE
-  // ============================================================
   const profilesById = new Map(profiles.map((p) => [p.id, p]));
   const subRows: AdminSubRow[] = activeSubsList.map((s) => {
     const p = profilesById.get(s.user_id);

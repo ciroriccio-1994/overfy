@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type BillingCycle = "monthly" | "annual";
+type BillingCycle = "monthly" | "quarterly" | "annual";
 
 type Plan = {
   id: string;
   name: string;
   tagline: string;
   monthlyPrice: number | null;
+  quarterlyPrice: number | null;
   annualPrice: number | null;
   description: string;
   features: string[];
@@ -27,6 +28,7 @@ const plans: Plan[] = [
     name: "Essenziale",
     tagline: "Esisti online, professionalmente",
     monthlyPrice: 49.99,
+    quarterlyPrice: 134.99,
     annualPrice: 489.99,
     description: "Per professionisti singoli, piccoli studi, chi non ha mai avuto un sito.",
     features: [
@@ -49,6 +51,7 @@ const plans: Plan[] = [
     name: "Professionale",
     tagline: "Il sito + gli strumenti che ti liberano tempo",
     monthlyPrice: 129.99,
+    quarterlyPrice: 350.99,
     annualPrice: 1289.99,
     description: "Per chi riceve clienti, ha appuntamenti, vuole automatizzare.",
     features: [
@@ -73,6 +76,7 @@ const plans: Plan[] = [
     name: "Business",
     tagline: "Quando vendi, gestisci, o scali",
     monthlyPrice: 249.99,
+    quarterlyPrice: 674.99,
     annualPrice: 2489.99,
     description: "Per chi vende online o gestisce processi complessi.",
     features: [
@@ -98,6 +102,7 @@ const plans: Plan[] = [
     name: "Su Misura",
     tagline: "Quando serve qualcosa di unico",
     monthlyPrice: null,
+    quarterlyPrice: null,
     annualPrice: null,
     description: "App native, web app, tool AI dedicati per aziende strutturate.",
     features: [
@@ -131,13 +136,18 @@ function formatPrice(price: number): string {
   return price.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function cycleToInterval(cycle: BillingCycle): "month" | "quarter" | "year" {
+  if (cycle === "quarterly") return "quarter";
+  if (cycle === "annual") return "year";
+  return "month";
+}
+
 export function Pricing() {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Verifica stato auth client-side (non bloccante per il SSR)
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => setAuthed(!!user));
@@ -149,15 +159,13 @@ export function Pricing() {
 
   async function handlePaidCta(planId: string) {
     setError(null);
-    const interval: "month" | "year" = cycle === "annual" ? "year" : "month";
+    const interval = cycleToInterval(cycle);
 
-    // Se non loggato → mandiamo a registrazione con piano preselezionato
     if (!authed) {
       window.location.href = `/registrati?plan=${planId}&interval=${interval}`;
       return;
     }
 
-    // Se loggato → apriamo checkout diretto
     setLoadingPlan(planId);
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -197,10 +205,11 @@ export function Pricing() {
             <em className="font-display-italic text-[var(--color-mint-ink)]">zero sorprese.</em>
           </h2>
           <p className="text-lg text-[var(--color-ink-soft)] leading-relaxed max-w-2xl">
-            Scegli il pacchetto giusto per te. Paghi solo quando usi il servizio. Disdetta libera in qualsiasi momento.
+            Scegli il pacchetto giusto per te. Più lungo il commitment, più risparmi. La disdetta blocca i rinnovi futuri — il periodo pagato prosegue fino a scadenza.
           </p>
         </div>
 
+        {/* Toggle a 3 stati */}
         <div className="mb-12 flex justify-start">
           <div className="inline-flex items-center gap-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full p-1.5">
             <button
@@ -208,6 +217,21 @@ export function Pricing() {
               className={`px-5 py-2 rounded-full text-sm font-medium transition ${cycle === "monthly" ? "bg-[var(--color-ink)] text-[var(--color-paper)]" : "text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"}`}
             >
               Mensile
+            </button>
+            <button
+              onClick={() => setCycle("quarterly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition flex items-center gap-2 ${cycle === "quarterly" ? "bg-[var(--color-ink)] text-[var(--color-paper)]" : "text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"}`}
+            >
+              Trimestrale
+              <span
+                className="text-[10px] font-mono px-2 py-0.5 rounded-full"
+                style={{
+                  background: cycle === "quarterly" ? "var(--color-sky)" : "var(--color-sky-soft)",
+                  color: cycle === "quarterly" ? "var(--color-ink)" : "var(--color-sky-ink)",
+                }}
+              >
+                -10%
+              </span>
             </button>
             <button
               onClick={() => setCycle("annual")}
@@ -237,7 +261,13 @@ export function Pricing() {
           {plans.map((plan) => {
             const c = colorMap[plan.color];
             const isCustom = plan.monthlyPrice === null;
-            const bigPrice = cycle === "monthly" ? plan.monthlyPrice : plan.annualPrice ? plan.annualPrice / 12 : null;
+
+            // Calcolo bigPrice mostrato al top della card (sempre €/mese equivalente)
+            let bigPrice: number | null = null;
+            if (cycle === "monthly") bigPrice = plan.monthlyPrice;
+            else if (cycle === "quarterly" && plan.quarterlyPrice) bigPrice = plan.quarterlyPrice / 3;
+            else if (cycle === "annual" && plan.annualPrice) bigPrice = plan.annualPrice / 12;
+
             const isLoading = loadingPlan === plan.id;
 
             return (
@@ -278,7 +308,13 @@ export function Pricing() {
                           <span className="text-[var(--color-muted)] text-xs">/mese</span>
                         </div>
 
-                        {cycle === "annual" && plan.annualPrice ? (
+                        {cycle === "quarterly" && plan.quarterlyPrice ? (
+                          <div className="text-xs text-[var(--color-muted)] mt-2 leading-tight">
+                            fatturati ogni 3 mesi
+                            <br />
+                            <span className="font-mono">(€{formatPrice(plan.quarterlyPrice)}/trim)</span>
+                          </div>
+                        ) : cycle === "annual" && plan.annualPrice ? (
                           <div className="text-xs text-[var(--color-muted)] mt-2 leading-tight">
                             fatturati annualmente
                             <br />
@@ -361,7 +397,11 @@ export function Pricing() {
         <div className="text-center mt-12 max-w-3xl mx-auto">
           <p className="text-sm text-[var(--color-muted)]">
             Tutti i prezzi sono <strong>IVA esclusa</strong>. Fatturazione{" "}
-            {cycle === "annual" ? "annuale" : "mensile"}. Disdetta libera in qualsiasi momento.
+            {cycle === "annual" ? "annuale" : cycle === "quarterly" ? "trimestrale" : "mensile"}.
+            La disdetta blocca i rinnovi futuri, il periodo già pagato prosegue fino a scadenza.{" "}
+            <Link href="/termini" className="underline hover:text-[var(--color-ink)]">Termini</Link>
+            {" · "}
+            <Link href="/rimborsi" className="underline hover:text-[var(--color-ink)]">Rimborsi</Link>
           </p>
         </div>
       </div>
