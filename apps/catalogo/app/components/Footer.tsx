@@ -52,11 +52,7 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-10 mb-12">
           <div className="md:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
-              <div className="flex gap-0.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
-              </div>
+              <OverfyMark />
               <span className="font-display text-2xl text-[var(--color-ink)] tracking-tight">
                 Overfy
               </span>
@@ -79,7 +75,7 @@ export function Footer() {
               <li><Link href="/#demo" className="hover:text-[var(--color-ink)] transition">Esempi</Link></li>
               <li><Link href="/#ai-business" className="hover:text-[var(--color-ink)] transition">AI per aziende</Link></li>
               <li><Link href="/#pacchetti" className="hover:text-[var(--color-ink)] transition">Pacchetti</Link></li>
-              <li><Link href="/#gioco-pulito" className="hover:text-[var(--color-ink)] transition">Gioco pulito</Link></li>
+              <li><Link href="/#cosa-include" className="hover:text-[var(--color-ink)] transition">Cosa include</Link></li>
               <li><Link href="/#modello" className="hover:text-[var(--color-ink)] transition">Il modello</Link></li>
             </ul>
           </div>
@@ -105,5 +101,53 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+/**
+ * Stesso OverfyMark della Navbar, duplicato qui per evitare import cross-file
+ * e tenere ogni componente della home autonomo.
+ */
+function OverfyMark() {
+  return (
+    <span
+      className="relative inline-flex items-center"
+      aria-hidden="true"
+      style={{ width: 40, height: 18 }}
+    >
+      <span className="flex gap-0.5 absolute left-0 top-1/2 -translate-y-1/2">
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
+      </span>
+      <svg
+        viewBox="0 0 40 18"
+        width="40"
+        height="18"
+        className="absolute left-0 top-0 pointer-events-none overflow-visible"
+      >
+        <defs>
+          <linearGradient id="overfy-mark-arrow-footer" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="var(--color-mint)" />
+            <stop offset="100%" stopColor="var(--color-sky)" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 17 13 Q 26 13 32 6"
+          fill="none"
+          stroke="url(#overfy-mark-arrow-footer)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 32 6 L 28.5 5 M 32 6 L 31.5 9.5"
+          fill="none"
+          stroke="url(#overfy-mark-arrow-footer)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
   );
 }

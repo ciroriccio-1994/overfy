@@ -1,17 +1,14 @@
 "use client";
-
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
   return (
     <nav
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
@@ -22,18 +19,13 @@ export function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex gap-0.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
-          </div>
+          <OverfyMark />
           <div className="leading-none">
             <span className="font-display text-2xl text-[var(--color-ink)] tracking-tight">
               Overfy
             </span>
           </div>
         </Link>
-
         <div className="hidden lg:flex items-center gap-6 text-sm">
           <Link
             href="/#demo"
@@ -54,10 +46,10 @@ export function Navbar() {
             Pacchetti
           </Link>
           <Link
-            href="/#gioco-pulito"
+            href="/#cosa-include"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
-            Gioco pulito
+            Cosa include
           </Link>
           <Link
             href="/#modello"
@@ -72,7 +64,6 @@ export function Navbar() {
             Parla con noi →
           </Link>
         </div>
-
         <Link
           href="/contatti"
           className="lg:hidden bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 rounded-full text-xs"
@@ -81,5 +72,57 @@ export function Navbar() {
         </Link>
       </div>
     </nav>
+  );
+}
+
+/**
+ * OverfyMark: i 3 pallini sovrapposti + la freccia gradient mint→sky che sale
+ * dal pallino blu. Riprende fedelmente il logo ufficiale in versione compatta
+ * per la navbar e il footer.
+ */
+function OverfyMark() {
+  return (
+    <span
+      className="relative inline-flex items-center"
+      aria-hidden="true"
+      style={{ width: 40, height: 18 }}
+    >
+      {/* 3 pallini */}
+      <span className="flex gap-0.5 absolute left-0 top-1/2 -translate-y-1/2">
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
+      </span>
+      {/* Freccia gradient mint → sky */}
+      <svg
+        viewBox="0 0 40 18"
+        width="40"
+        height="18"
+        className="absolute left-0 top-0 pointer-events-none overflow-visible"
+      >
+        <defs>
+          <linearGradient id="overfy-mark-arrow" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="var(--color-mint)" />
+            <stop offset="100%" stopColor="var(--color-sky)" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 17 13 Q 26 13 32 6"
+          fill="none"
+          stroke="url(#overfy-mark-arrow)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        {/* Punta della freccia */}
+        <path
+          d="M 32 6 L 28.5 5 M 32 6 L 31.5 9.5"
+          fill="none"
+          stroke="url(#overfy-mark-arrow)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
   );
 }

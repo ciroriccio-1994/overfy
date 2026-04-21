@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 130" fill="none">
+  <defs>
+    <linearGradient id="arrowGradient" x1="0" y1="130" x2="480" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00c896"/>
+      <stop offset="1" stop-color="#3ba3ff"/>
+    </linearGradient>
+  </defs>
+  <!-- 3 pallini sovrapposti -->
+  <circle cx="40" cy="70" r="22" fill="#ff4d4d"/>
+  <circle cx="64" cy="70" r="22" fill="#00c896"/>
+  <circle cx="88" cy="70" r="22" fill="#3ba3ff"/>
+  <!-- Testo "Overfy" in serif -->
+  <text x="130" y="90" font-family="'Instrument Serif', 'Times New Roman', Georgia, serif" font-size="84" font-weight="400" fill="#0a0a0a" letter-spacing="-2">Overfy</text>
+  <!-- Freccia curva mint→sky che parte sotto la "y" e sale in alto-destra -->
+  <path d="M 370 80 Q 420 72 448 30" stroke="url(#arrowGradient)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- Punta della freccia -->
+  <polygon points="448,15 465,38 430,36" fill="#3ba3ff" transform="rotate(18 448 30)"/>
+</svg>
