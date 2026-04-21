@@ -34,10 +34,10 @@ export function Navbar() {
             Esempi
           </Link>
           <Link
-            href="/#ai-business"
+            href="/#come-funziona"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
-            AI per aziende
+            Come funziona
           </Link>
           <Link
             href="/#pacchetti"
@@ -46,13 +46,13 @@ export function Navbar() {
             Pacchetti
           </Link>
           <Link
-            href="/#come-funziona"
+            href="/per-aziende"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
-            Come funziona
+            Per aziende
           </Link>
           <Link
-            href="/#modello"
+            href="/modello"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
             Il modello

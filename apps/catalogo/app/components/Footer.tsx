@@ -49,7 +49,7 @@ export function Footer() {
   return (
     <footer className="bg-[var(--color-bg-soft)] border-t border-[var(--color-line)] py-16 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-10 mb-12">
+        <div className="grid md:grid-cols-5 gap-10 mb-12">
           <div className="md:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
               <OverfyMark />
@@ -58,9 +58,8 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed max-w-sm mb-4">
-              Il tuo business, un livello sopra. Digitalizzazione su misura
-              per attività italiane — zero costi di setup, tutto incluso
-              nell&apos;abbonamento.
+              Il tuo business online in 48 ore. Un abbonamento, tutto incluso.
+              Digitalizzazione su misura per attività italiane.
             </p>
             <p className="text-xs font-mono text-[var(--color-muted)]">
               Napoli, Italia · 2026
@@ -69,14 +68,25 @@ export function Footer() {
 
           <div>
             <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
-              Esplora
+              Home
             </div>
             <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
               <li><Link href="/#demo" className="hover:text-[var(--color-ink)] transition">Esempi</Link></li>
-              <li><Link href="/#ai-business" className="hover:text-[var(--color-ink)] transition">AI per aziende</Link></li>
-              <li><Link href="/#pacchetti" className="hover:text-[var(--color-ink)] transition">Pacchetti</Link></li>
               <li><Link href="/#come-funziona" className="hover:text-[var(--color-ink)] transition">Come funziona</Link></li>
-              <li><Link href="/#modello" className="hover:text-[var(--color-ink)] transition">Il modello</Link></li>
+              <li><Link href="/#pacchetti" className="hover:text-[var(--color-ink)] transition">Pacchetti</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
+              Approfondisci
+            </div>
+            <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
+              <li><Link href="/esempi" className="hover:text-[var(--color-ink)] transition">Tutti gli esempi</Link></li>
+              <li><Link href="/per-aziende" className="hover:text-[var(--color-ink)] transition">Per aziende</Link></li>
+              <li><Link href="/chatbot" className="hover:text-[var(--color-ink)] transition">Il chatbot AI</Link></li>
+              <li><Link href="/modello" className="hover:text-[var(--color-ink)] transition">Il modello</Link></li>
+              <li><Link href="/dettagli" className="hover:text-[var(--color-ink)] transition">Dettagli e regole</Link></li>
             </ul>
           </div>
 
