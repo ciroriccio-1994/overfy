@@ -75,7 +75,7 @@ export function Footer() {
               <li><Link href="/#demo" className="hover:text-[var(--color-ink)] transition">Esempi</Link></li>
               <li><Link href="/#ai-business" className="hover:text-[var(--color-ink)] transition">AI per aziende</Link></li>
               <li><Link href="/#pacchetti" className="hover:text-[var(--color-ink)] transition">Pacchetti</Link></li>
-              <li><Link href="/#cosa-include" className="hover:text-[var(--color-ink)] transition">Cosa include</Link></li>
+              <li><Link href="/#come-funziona" className="hover:text-[var(--color-ink)] transition">Come funziona</Link></li>
               <li><Link href="/#modello" className="hover:text-[var(--color-ink)] transition">Il modello</Link></li>
             </ul>
           </div>
@@ -104,10 +104,6 @@ export function Footer() {
   );
 }
 
-/**
- * Stesso OverfyMark della Navbar, duplicato qui per evitare import cross-file
- * e tenere ogni componente della home autonomo.
- */
 function OverfyMark() {
   return (
     <span

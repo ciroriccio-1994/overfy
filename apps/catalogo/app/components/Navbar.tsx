@@ -46,10 +46,10 @@ export function Navbar() {
             Pacchetti
           </Link>
           <Link
-            href="/#cosa-include"
+            href="/#come-funziona"
             className="text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
           >
-            Cosa include
+            Come funziona
           </Link>
           <Link
             href="/#modello"
@@ -75,11 +75,6 @@ export function Navbar() {
   );
 }
 
-/**
- * OverfyMark: i 3 pallini sovrapposti + la freccia gradient mint→sky che sale
- * dal pallino blu. Riprende fedelmente il logo ufficiale in versione compatta
- * per la navbar e il footer.
- */
 function OverfyMark() {
   return (
     <span
@@ -87,13 +82,11 @@ function OverfyMark() {
       aria-hidden="true"
       style={{ width: 40, height: 18 }}
     >
-      {/* 3 pallini */}
       <span className="flex gap-0.5 absolute left-0 top-1/2 -translate-y-1/2">
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
       </span>
-      {/* Freccia gradient mint → sky */}
       <svg
         viewBox="0 0 40 18"
         width="40"
@@ -113,7 +106,6 @@ function OverfyMark() {
           strokeWidth="1.8"
           strokeLinecap="round"
         />
-        {/* Punta della freccia */}
         <path
           d="M 32 6 L 28.5 5 M 32 6 L 31.5 9.5"
           fill="none"

@@ -1,11 +1,11 @@
-export function Model() {
+﻿export function Model() {
   return (
     <section id="modello" className="py-24 md:py-32 px-6 bg-[var(--color-bg-soft)]">
       <div className="max-w-6xl mx-auto">
         <div className="mb-16 md:mb-20 max-w-3xl">
           <div className="inline-flex items-center gap-2 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-full px-3 py-1 mb-6 text-xs font-mono">
             <span className="text-[var(--color-ink-soft)]">
-              08 / Come funziona
+              08 / Il modello
             </span>
           </div>
           <h2 className="font-display text-5xl md:text-7xl leading-[0.95] text-[var(--color-ink)] tracking-tight mb-6">
@@ -18,7 +18,7 @@ export function Model() {
           <p className="text-lg text-[var(--color-ink-soft)] leading-relaxed max-w-2xl">
             Zero costi iniziali da migliaia di euro. Un abbonamento semplice
             che copre tutto: sito, hosting, dominio, manutenzione, supporto.
-            Un modello chiaro — finalmente applicato anche al tuo business
+            Un modello chiaro â€” finalmente applicato anche al tuo business
             digitale.
           </p>
         </div>
@@ -36,23 +36,23 @@ export function Model() {
             </h3>
             <ul className="space-y-3 text-sm text-[var(--color-ink-soft)] leading-relaxed">
               <li className="flex gap-3">
-                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">✗</span>
-                <span>Da €2.000 a €8.000 iniziali per lo sviluppo del sito</span>
+                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">âœ—</span>
+                <span>Da â‚¬2.000 a â‚¬8.000 iniziali per lo sviluppo del sito</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">✗</span>
-                <span>Hosting, SSL, manutenzione: altri €300-600 all&apos;anno</span>
+                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">âœ—</span>
+                <span>Hosting, SSL, manutenzione: altri â‚¬300-600 all&apos;anno</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">✗</span>
-                <span>Ogni modifica è un preventivo a parte</span>
+                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">âœ—</span>
+                <span>Ogni modifica Ã¨ un preventivo a parte</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">✗</span>
+                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">âœ—</span>
                 <span>Se l&apos;agenzia smette di rispondere, il tuo sito muore</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">✗</span>
+                <span className="text-[var(--color-muted)] mt-0.5 flex-shrink-0">âœ—</span>
                 <span>Aggiornamenti tecnologici a carico tuo</span>
               </li>
             </ul>
@@ -86,23 +86,23 @@ export function Model() {
             </h3>
             <ul className="space-y-3 text-sm text-[var(--color-ink)] leading-relaxed">
               <li className="flex gap-3">
-                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>✓</span>
+                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>âœ“</span>
                 <span><strong>Zero costi iniziali.</strong> Niente esborso da migliaia di euro</span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>✓</span>
+                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>âœ“</span>
                 <span>Hosting, <strong>dominio .it</strong>, SSL, backup, aggiornamenti: <strong>tutto incluso</strong></span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>✓</span>
+                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>âœ“</span>
                 <span>Modifiche contenuti <strong>illimitate</strong>, gestite da noi</span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>✓</span>
+                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>âœ“</span>
                 <span><strong>Supporto continuo</strong>: siamo qui tutti i giorni</span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>✓</span>
+                <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: "var(--color-mint-ink)" }}>âœ“</span>
                 <span>Disdetta libera, <strong>nessun vincolo</strong> di durata</span>
               </li>
             </ul>
@@ -120,7 +120,7 @@ export function Model() {
           <div className="grid md:grid-cols-12 gap-8 items-start">
             <div className="md:col-span-5">
               <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-sky-ink)] mb-4">
-                Onestà totale
+                OnestÃ  totale
               </div>
               <h3 className="font-display text-4xl md:text-5xl leading-[1] text-[var(--color-ink)] mb-4">
                 Se smetti
@@ -130,7 +130,7 @@ export function Model() {
                 </em>
               </h3>
               <p className="text-[var(--color-ink-soft)] leading-relaxed">
-                Te lo diciamo subito, senza giri di parole. È giusto che tu
+                Te lo diciamo subito, senza giri di parole. Ãˆ giusto che tu
                 sappia esattamente come funziona prima di iniziare.
               </p>
             </div>
@@ -160,7 +160,7 @@ export function Model() {
                       I tuoi dati restano conservati per 90 giorni
                     </div>
                     <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
-                      Lista clienti, prenotazioni, ordini, contenuti — tutto
+                      Lista clienti, prenotazioni, ordini, contenuti â€” tutto
                       resta al sicuro per tre mesi. Hai tempo per ripensarci.
                     </p>
                   </div>
@@ -172,7 +172,7 @@ export function Model() {
                   <div className="w-10 h-10 rounded-full bg-[var(--color-sky-soft)] flex items-center justify-center flex-shrink-0 font-mono text-sm text-[var(--color-sky-ink)] font-bold">3</div>
                   <div>
                     <div className="font-display text-xl text-[var(--color-ink)] mb-1 leading-tight">
-                      Riattivare è semplice
+                      Riattivare Ã¨ semplice
                     </div>
                     <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
                       Basta riprendere l&apos;abbonamento e tutto torna online
@@ -191,7 +191,7 @@ export function Model() {
                     </div>
                     <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
                       Trascorsi i 90 giorni, cancelliamo definitivamente i dati
-                      (come prevede il GDPR) e non rinnoviamo più il dominio
+                      (come prevede il GDPR) e non rinnoviamo piÃ¹ il dominio
                       .it, che viene rilasciato. Niente dati conservati per
                       sempre, niente sorprese.
                     </p>

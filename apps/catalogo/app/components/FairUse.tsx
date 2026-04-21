@@ -1,17 +1,17 @@
 export function FairUse() {
   return (
-    <section id="cosa-include" className="py-24 md:py-32 px-6 relative overflow-hidden">
+    <section id="come-funziona" className="py-24 md:py-32 px-6 relative overflow-hidden">
       <div
         className="absolute top-0 right-0 w-[400px] h-[400px] blob opacity-10 translate-x-1/3 -translate-y-1/3"
         style={{ background: "var(--color-sky)" }}
       ></div>
 
       <div className="max-w-6xl mx-auto relative">
-        {/* HEADER — box elegante stile hero, serif italic + keyword uppercase */}
+        {/* HEADER */}
         <div className="mb-16 md:mb-20">
           <div className="text-center mb-10">
             <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4">
-              06 / Cosa include
+              07 / Come funziona
             </div>
             <h2 className="font-display text-5xl md:text-7xl leading-[0.95] text-[var(--color-ink)] tracking-tight">
               Tutto scritto.
@@ -41,7 +41,7 @@ export function FairUse() {
           </div>
         </div>
 
-        {/* 6 ACCORDION — una voce per card, apribile */}
+        {/* 6 ACCORDION */}
         <div className="max-w-3xl mx-auto space-y-3 mb-20">
           {rules.map((rule, i) => (
             <details
@@ -123,7 +123,7 @@ export function FairUse() {
           </div>
         </div>
 
-        {/* CTA finale — asciugata */}
+        {/* CTA finale */}
         <div
           className="mt-16 rounded-2xl p-8 md:p-10 border text-center max-w-2xl mx-auto"
           style={{
@@ -144,7 +144,7 @@ export function FairUse() {
 }
 
 /* ========================================================================== */
-/* DATA — 6 regole, estratte dal vecchio FairUse. Contenuto invariato.        */
+/* DATA                                                                        */
 /* ========================================================================== */
 
 type Rule = {
@@ -280,10 +280,6 @@ const rules: Rule[] = [
   },
 ];
 
-/* ========================================================================== */
-/* DATA — FAQ (invariate)                                                      */
-/* ========================================================================== */
-
 const faqs = [
   {
     q: "Cosa succede se supero il limite di traffico?",
@@ -322,10 +318,6 @@ const faqs = [
     a: "Scenario da affrontare con onestà: ti esporteremmo tutti i dati in formato standard (CSV, HTML per contenuti) e ti daremmo 60 giorni di preavviso. Il codice e il design non sono portabili tali e quali altrove, ma contenuti e dati clienti restano sempre tuoi.",
   },
 ];
-
-/* ========================================================================== */
-/* ROW HELPERS                                                                 */
-/* ========================================================================== */
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
