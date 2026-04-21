@@ -2,6 +2,12 @@
 //
 // Webhook Stripe. Verifica firma HMAC, idempotenza via webhook_events.
 // Gestisce eventi che cambiano lo stato degli abbonamenti.
+//
+// Fix 2026-04-21: dalla versione API Stripe 2025-04-30 circa i campi
+// current_period_start e current_period_end sono stati RIMOSSI dal top-level
+// di Subscription e spostati su items.data[].current_period_end/start (per
+// supportare sub multi-item con cadenze diverse). Il codice ora legge da lì
+// con fallback al vecchio top-level per compatibilità retroattiva.
 
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
@@ -14,7 +20,6 @@ import type { SubscriptionStatus, BillingInterval } from '@/types/database';
 
 export const runtime = 'nodejs';
 
-// I webhook Stripe richiedono il body grezzo per verificare la firma.
 export async function POST(request: Request) {
   const signature = request.headers.get('stripe-signature');
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -157,16 +162,24 @@ async function upsertSubscription(
   const userId = sub.metadata?.supabase_user_id;
   if (!userId) return;
 
-  const priceId = sub.items.data[0]?.price.id;
+  const firstItem = sub.items.data[0];
+  const priceId = firstItem?.price.id;
   const resolved = priceId ? resolvePriceId(priceId) : null;
 
-  // Type Stripe.Subscription API recent: current_period_start/end possono
-  // non essere tipati direttamente in tutte le versioni del SDK.
+  // API Stripe recente (2025+): current_period_*/ sono su items.data[*].
+  // Vecchia API: sul top-level di Subscription. Leggo con fallback.
+  const itemAny = firstItem as unknown as {
+    current_period_start?: number;
+    current_period_end?: number;
+  } | undefined;
   const subAny = sub as unknown as {
     current_period_start?: number;
     current_period_end?: number;
     canceled_at?: number | null;
   };
+
+  const periodStart = itemAny?.current_period_start ?? subAny.current_period_start;
+  const periodEnd = itemAny?.current_period_end ?? subAny.current_period_end;
 
   const toISO = (ts: number | null | undefined) =>
     ts ? new Date(ts * 1000).toISOString() : null;
@@ -179,8 +192,8 @@ async function upsertSubscription(
     plan_tier: resolved?.tier ?? 'essenziale',
     billing_interval: (resolved?.interval ?? 'month') as BillingInterval,
     status: sub.status as SubscriptionStatus,
-    current_period_start: toISO(subAny.current_period_start),
-    current_period_end: toISO(subAny.current_period_end),
+    current_period_start: toISO(periodStart),
+    current_period_end: toISO(periodEnd),
     cancel_at_period_end: sub.cancel_at_period_end,
     canceled_at: toISO(subAny.canceled_at ?? null),
   };

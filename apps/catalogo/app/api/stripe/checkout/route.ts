@@ -2,6 +2,10 @@
 //
 // Crea una Stripe Checkout Session per l'utente autenticato.
 // Chiamato da Pricing al click su "Scegli Essenziale/Pro/Business".
+//
+// Fix 2026-04-21: aggiunto customer_update: { name: 'auto', address: 'auto' }
+// perché tax_id_collection richiede che Stripe possa aggiornare il customer
+// esistente con i dati che il cliente inserisce in fase di checkout.
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -88,6 +92,13 @@ export async function POST(request: Request) {
       allow_promotion_codes: true,
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
+      // Richiesto quando si passa un customer esistente + tax_id_collection.
+      // Permette a Stripe di aggiornare name e address del customer con i
+      // valori inseriti nel form di checkout.
+      customer_update: {
+        name: 'auto',
+        address: 'auto',
+      },
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,

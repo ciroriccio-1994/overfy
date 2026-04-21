@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -23,12 +24,10 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Chiudi menu quando cambi pagina
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
 
-  // Chiudi al click fuori
   useEffect(() => {
     if (!menuOpen) return;
     function onDown(e: MouseEvent) {
@@ -58,13 +57,15 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <OverfyMark />
-          <div className="leading-none">
-            <span className="font-display text-2xl text-[var(--color-ink)] tracking-tight">
-              Overfy
-            </span>
-          </div>
+        <Link href="/" className="flex items-center group" aria-label="Overfy">
+          <Image
+            src="/logo-overfy-brand.png"
+            alt="Overfy"
+            width={200}
+            height={62}
+            priority
+            className="h-9 w-auto md:h-10"
+          />
         </Link>
 
         <div className="hidden lg:flex items-center gap-6 text-sm">
@@ -179,7 +180,6 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
           )}
         </div>
 
-        {/* Mobile CTA */}
         {isAuthenticated ? (
           <Link
             href="/dashboard"
@@ -209,48 +209,4 @@ function computeInitials(name: string | null, email: string | null): string {
     return email[0]?.toUpperCase() ?? "U";
   }
   return "U";
-}
-
-function OverfyMark() {
-  return (
-    <span
-      className="relative inline-flex items-center"
-      aria-hidden="true"
-      style={{ width: 40, height: 18 }}
-    >
-      <span className="flex gap-0.5 absolute left-0 top-1/2 -translate-y-1/2">
-        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-coral)]"></span>
-        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-mint)] -ml-1"></span>
-        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-sky)] -ml-1"></span>
-      </span>
-      <svg
-        viewBox="0 0 40 18"
-        width="40"
-        height="18"
-        className="absolute left-0 top-0 pointer-events-none overflow-visible"
-      >
-        <defs>
-          <linearGradient id="overfy-mark-arrow" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--color-mint)" />
-            <stop offset="100%" stopColor="var(--color-sky)" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M 17 13 Q 26 13 32 6"
-          fill="none"
-          stroke="url(#overfy-mark-arrow)"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-        <path
-          d="M 32 6 L 28.5 5 M 32 6 L 31.5 9.5"
-          fill="none"
-          stroke="url(#overfy-mark-arrow)"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </span>
-  );
 }

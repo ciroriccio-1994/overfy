@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export function RegistratiForm() {
@@ -17,10 +17,17 @@ export function RegistratiForm() {
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+
+  // Reset degli errori quando l'utente modifica l'email
+  useEffect(() => {
+    if (alreadyRegistered) setAlreadyRegistered(false);
+  }, [email]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setAlreadyRegistered(false);
 
     if (password.length < 8) {
       setError('La password deve avere almeno 8 caratteri.');
@@ -34,7 +41,6 @@ export function RegistratiForm() {
     setLoading(true);
     const supabase = createClient();
 
-    // Costruisco redirect URL per conferma email
     const siteUrl =
       typeof window !== 'undefined' ? window.location.origin : 'https://overfydigital.com';
 
@@ -44,8 +50,10 @@ export function RegistratiForm() {
     const nextQs = nextParams.toString();
     const emailRedirectTo = `${siteUrl}/auth/callback${nextQs ? `?${nextQs}` : ''}`;
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: normalizedEmail,
       password,
       options: {
         data: { full_name: fullName.trim() || null },
@@ -57,15 +65,31 @@ export function RegistratiForm() {
 
     if (signUpError) {
       const msg = signUpError.message || 'Errore durante la registrazione.';
-      if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('user already')) {
-        setError('Hai già un account con questa email. Vai al login.');
+      if (
+        msg.toLowerCase().includes('already registered') ||
+        msg.toLowerCase().includes('user already')
+      ) {
+        setAlreadyRegistered(true);
       } else {
         setError(msg);
       }
       return;
     }
 
-    const verifyQs = new URLSearchParams({ email });
+    // Supabase con "Prevent email enumeration" ON non restituisce errore quando
+    // l'email è già registrata — ma la risposta ha `data.user.identities = []`.
+    // Questo è il segnale che dobbiamo intercettare per mostrare il messaggio giusto.
+    if (
+      data?.user &&
+      Array.isArray(data.user.identities) &&
+      data.user.identities.length === 0
+    ) {
+      setAlreadyRegistered(true);
+      return;
+    }
+
+    // Registrazione nuova OK → pagina di verifica email
+    const verifyQs = new URLSearchParams({ email: normalizedEmail });
     if (plan) verifyQs.set('plan', plan);
     if (interval) verifyQs.set('interval', interval);
     router.push(`/verifica-email?${verifyQs.toString()}`);
@@ -74,7 +98,10 @@ export function RegistratiForm() {
   return (
     <div className="bg-[var(--color-paper)] border border-[var(--color-line)] rounded-2xl p-8 md:p-10">
       {plan && (
-        <div className="mb-6 p-4 rounded-xl text-sm" style={{ background: 'var(--color-mint-soft)', color: 'var(--color-mint-ink)' }}>
+        <div
+          className="mb-6 p-4 rounded-xl text-sm"
+          style={{ background: 'var(--color-mint-soft)', color: 'var(--color-mint-ink)' }}
+        >
           Stai attivando il piano <strong>{plan.charAt(0).toUpperCase() + plan.slice(1)}</strong>
           {interval === 'year' ? ' (annuale)' : ' (mensile)'}. Dopo la conferma email procederai al pagamento.
         </div>
@@ -138,15 +165,63 @@ export function RegistratiForm() {
           </span>
         </label>
 
-        {error && (
-          <div className="p-3 rounded-lg text-sm" style={{ background: 'var(--color-coral-soft)', color: 'var(--color-coral-ink)' }}>
+        {alreadyRegistered && (
+          <div
+            className="p-5 rounded-xl border"
+            style={{
+              background: 'var(--color-mint-soft)',
+              borderColor: 'var(--color-mint-ink)',
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-6 h-6 mt-0.5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                style={{ background: 'var(--color-mint-ink)', color: 'var(--color-paper)' }}
+              >
+                i
+              </div>
+              <div className="flex-1">
+                <div
+                  className="font-medium text-sm mb-1"
+                  style={{ color: 'var(--color-ink)' }}
+                >
+                  Hai già un account con questa email
+                </div>
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: 'var(--color-ink-soft)' }}
+                >
+                  Questa email è già registrata su Overfy. Accedi con la tua password, oppure usa &ldquo;Password dimenticata?&rdquo; nella pagina di login.
+                </p>
+                <div className="mt-4">
+                  <Link
+                    href={`/login?email=${encodeURIComponent(email.trim().toLowerCase())}`}
+                    className="inline-block px-5 py-2.5 rounded-full text-xs font-medium transition"
+                    style={{
+                      background: 'var(--color-ink)',
+                      color: 'var(--color-paper)',
+                    }}
+                  >
+                    Vai al login →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && !alreadyRegistered && (
+          <div
+            className="p-3 rounded-lg text-sm"
+            style={{ background: 'var(--color-coral-soft)', color: 'var(--color-coral-ink)' }}
+          >
             {error}
           </div>
         )}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || alreadyRegistered}
           className="w-full bg-[var(--color-ink)] text-[var(--color-paper)] py-4 rounded-full text-sm font-medium hover:bg-[var(--color-mint-ink)] transition disabled:opacity-60"
         >
           {loading ? 'Creo account…' : 'Crea account →'}
