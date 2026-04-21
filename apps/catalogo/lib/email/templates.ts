@@ -2,7 +2,7 @@
 //
 // Template HTML email — stile Overfy (Linear/Vercel tech moderno).
 // Logo: 3 pallini CSS + wordmark "Overfy" testuale — zero dipendenze
-// da immagini esterne, funziona in ogni client anche se bloccano i PNG.
+// da immagini esterne, funziona in ogni client.
 
 /* ================================================================= */
 /* WELCOME — inviata dal webhook Stripe dopo checkout completato      */
@@ -88,7 +88,9 @@ export function welcomeEmailHtml(args: {
 }
 
 /* ================================================================= */
-/* LEAD NOTIFY (admin) — inviata quando arriva un nuovo lead dal form */
+/* LEAD NOTIFY (admin)                                                */
+/* Se requestCallback=true → email diventa urgente (bordo rosso,      */
+/* eyebrow rosso "CALLBACK RICHIESTO", bottone tel: primary)          */
 /* ================================================================= */
 
 export function leadNotifyEmailHtml(args: {
@@ -99,14 +101,36 @@ export function leadNotifyEmailHtml(args: {
   message: string | null;
   source: string | null;
   interestTier: string | null;
+  requestCallback?: boolean;
+  preferredTimeLabel?: string | null;
 }): string {
-  const row = (label: string, value: string | null) =>
+  const isCallback = !!args.requestCallback;
+  const telHref = args.phone ? `tel:${args.phone.replace(/\s+/g, '')}` : null;
+
+  const row = (label: string, value: string | null, highlight = false) =>
     value
       ? `<tr>
           <td style="padding:10px 0;color:#a3a3a3;font-size:12px;width:110px;vertical-align:top;font-family:'SF Mono','Monaco',monospace;letter-spacing:0.04em;text-transform:uppercase;">${label}</td>
-          <td style="padding:10px 0;color:#0a0a0a;font-size:14px;line-height:1.5;">${escape(value)}</td>
+          <td style="padding:10px 0;color:${highlight ? '#dc2626' : '#0a0a0a'};font-size:14px;line-height:1.5;font-weight:${highlight ? '600' : '400'};">${escape(value)}</td>
         </tr>`
       : '';
+
+  // Accent color per eyebrow + card border in caso callback
+  const accentColor = isCallback ? '#dc2626' : '#a3a3a3';
+  const borderColor = isCallback ? '#fca5a5' : '#e5e5e5';
+  const eyebrowText = isCallback ? '🔥 CALLBACK RICHIESTO' : 'NUOVO LEAD';
+  const titleText = args.fullName || args.email;
+
+  const primaryButton = isCallback && telHref
+    ? `<a href="${telHref}" style="display:inline-block;background:#dc2626;color:#ffffff;padding:11px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:-0.01em;line-height:1.3;margin-right:8px;">
+        📞 Chiama ${escape(args.phone!)} →
+      </a>
+      <a href="mailto:${args.email}" style="display:inline-block;background:transparent;color:#525252;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;line-height:1.3;border:1px solid #e5e5e5;">
+        Email
+      </a>`
+    : `<a href="mailto:${args.email}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:11px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:-0.01em;line-height:1.3;">
+        Rispondi →
+      </a>`;
 
   return `<!DOCTYPE html>
 <html lang="it">
@@ -114,11 +138,19 @@ export function leadNotifyEmailHtml(args: {
 <meta charset="utf-8">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
-<title>Nuovo lead — Overfy</title>
+<title>${isCallback ? 'Callback richiesto' : 'Nuovo lead'} — Overfy</title>
 </head>
 <body style="margin:0;padding:0;background:#fafafa;font-family:'Inter','SF Pro Text',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0a0a0a;-webkit-font-smoothing:antialiased;">
 <table cellpadding="0" cellspacing="0" width="100%" bgcolor="#fafafa" style="background:#fafafa;padding:56px 20px;"><tr><td align="center">
-  <table cellpadding="0" cellspacing="0" width="520" style="max-width:520px;background:#ffffff;border:1px solid #e5e5e5;border-radius:12px;" bgcolor="#ffffff">
+  <table cellpadding="0" cellspacing="0" width="520" style="max-width:520px;background:#ffffff;border:${isCallback ? '2px' : '1px'} solid ${borderColor};border-radius:12px;" bgcolor="#ffffff">
+
+    ${isCallback ? `
+    <tr><td style="padding:0;background:#dc2626;border-radius:10px 10px 0 0;" bgcolor="#dc2626">
+      <p style="margin:0;padding:10px 36px;color:#ffffff;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;font-family:'SF Mono','Monaco',monospace;">
+        CHIAMARE${args.preferredTimeLabel ? ` · ${escape(args.preferredTimeLabel).toUpperCase()}` : ''}
+      </p>
+    </td></tr>
+    ` : ''}
 
     <tr><td style="padding:32px 36px 0 36px;background:#ffffff;" bgcolor="#ffffff">
       <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
@@ -138,19 +170,20 @@ export function leadNotifyEmailHtml(args: {
     </td></tr>
 
     <tr><td style="padding:28px 36px 0 36px;background:#ffffff;" bgcolor="#ffffff">
-      <p style="font-family:'SF Mono','Monaco','Menlo',monospace;font-size:11px;color:#a3a3a3;margin:0;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;">
-        NUOVO LEAD
+      <p style="font-family:'SF Mono','Monaco','Menlo',monospace;font-size:11px;color:${accentColor};margin:0;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+        ${eyebrowText}
       </p>
       <h1 style="font-family:'Inter','SF Pro Text',-apple-system,sans-serif;font-size:22px;line-height:1.2;font-weight:600;color:#0a0a0a;margin:8px 0 0 0;letter-spacing:-0.02em;">
-        ${escape(args.fullName || args.email)}
+        ${escape(titleText)}
       </h1>
     </td></tr>
 
     <tr><td style="padding:20px 36px 0 36px;background:#ffffff;" bgcolor="#ffffff">
       <table cellpadding="0" cellspacing="0" width="100%">
         ${row('Email', args.email)}
+        ${isCallback ? row('Telefono', args.phone, true) : row('Telefono', args.phone)}
         ${row('Azienda', args.companyName)}
-        ${row('Telefono', args.phone)}
+        ${isCallback && args.preferredTimeLabel ? row('Quando', args.preferredTimeLabel, true) : ''}
         ${row('Fonte', args.source)}
         ${row('Piano', args.interestTier)}
       </table>
@@ -162,9 +195,7 @@ export function leadNotifyEmailHtml(args: {
     </td></tr>
 
     <tr><td style="padding:24px 36px 0 36px;background:#ffffff;" bgcolor="#ffffff">
-      <a href="mailto:${args.email}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:11px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:-0.01em;line-height:1.3;">
-        Rispondi →
-      </a>
+      ${primaryButton}
     </td></tr>
 
     <tr><td style="padding:32px 36px 0 36px;background:#ffffff;" bgcolor="#ffffff">
