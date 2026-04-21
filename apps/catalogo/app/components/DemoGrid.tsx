@@ -213,36 +213,11 @@ function resolveDemoImage(demo: DemoLike): string {
     .join(" ")
     .toLowerCase();
 
-  if (
-    match.includes("marco") ||
-    match.includes("trainer") ||
-    match.includes("benessere") ||
-    match.includes("wellness") ||
-    match.includes("fitness")
-  ) {
-    return "/demos/pt.svg";
-  }
+  // IMPORTANTE: check dal più specifico al più generico.
+  // Salone Gloria ha category "BEAUTY & WELLNESS" — se mettessimo "wellness"
+  // tra le keyword di PT, il salone verrebbe classificato come palestra.
 
-  if (
-    match.includes("pasticceria") ||
-    match.includes("martino") ||
-    match.includes("alimentar") ||
-    match.includes("bakery") ||
-    match.includes("e-commerce")
-  ) {
-    return "/demos/pasticceria.svg";
-  }
-
-  if (
-    match.includes("figlia") ||
-    match.includes("presidente") ||
-    match.includes("pizzer") ||
-    match.includes("ristora") ||
-    match.includes("menu")
-  ) {
-    return "/demos/pizzeria.svg";
-  }
-
+  // 1. Salone / centro estetico
   if (
     match.includes("gloria") ||
     match.includes("salone") ||
@@ -253,6 +228,28 @@ function resolveDemoImage(demo: DemoLike): string {
     return "/demos/salone.svg";
   }
 
+  // 2. Pasticceria / bakery / e-commerce food
+  if (
+    match.includes("pasticceria") ||
+    match.includes("martino") ||
+    match.includes("bakery") ||
+    match.includes("alimentar")
+  ) {
+    return "/demos/pasticceria.svg";
+  }
+
+  // 3. Pizzeria / ristorante
+  if (
+    match.includes("figlia") ||
+    match.includes("presidente") ||
+    match.includes("pizzer") ||
+    match.includes("ristora") ||
+    match.includes("menu")
+  ) {
+    return "/demos/pizzeria.svg";
+  }
+
+  // 4. Studio dentistico
   if (
     match.includes("rinascita") ||
     match.includes("dentist") ||
@@ -262,6 +259,7 @@ function resolveDemoImage(demo: DemoLike): string {
     return "/demos/dentista.svg";
   }
 
+  // 5. Psicoterapeuta / counsel
   if (
     match.includes("russo") ||
     match.includes("chiara") ||
@@ -270,6 +268,18 @@ function resolveDemoImage(demo: DemoLike): string {
     match.includes("aiuto")
   ) {
     return "/demos/psicologa.svg";
+  }
+
+  // 6. Personal trainer / palestra (keyword SPECIFICHE, no "wellness"/"benessere")
+  if (
+    match.includes("marco") ||
+    match.includes("esposito") ||
+    match.includes("trainer") ||
+    match.includes("fitness") ||
+    match.includes("palestra") ||
+    match.includes("gym")
+  ) {
+    return "/demos/pt.svg";
   }
 
   return "/demos/pt.svg";
