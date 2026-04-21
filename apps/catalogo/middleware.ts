@@ -18,6 +18,9 @@ export const config = {
      * - _next/image  (ottimizzazione immagini)
      * - favicon.ico, sitemap.xml, robots.txt
      * - file con estensione statica
+     *
+     * Il webhook Stripe (/api/stripe/webhook) passa dal middleware ma
+     * NON viene protetto (la protezione è solo per /dashboard e /admin).
      */
     '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],

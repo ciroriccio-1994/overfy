@@ -3,6 +3,10 @@
 // Helper per il middleware: refresh automatico della sessione Supabase
 // ad ogni richiesta. Richiesto da @supabase/ssr per mantenere i cookie
 // di auth sincronizzati tra client e server.
+//
+// Protegge /dashboard e /admin a livello edge (redirect immediato se non
+// autenticati). Il check "is_admin" avviene poi dentro il Server Component
+// di /admin (requireAdmin in lib/auth-helpers.ts).
 
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -40,9 +44,9 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Protezione rotte: /dashboard e tutte le sue sottorotte richiedono auth.
-  // Se arrivano rotte protette aggiuntive in futuro, aggiungile qui.
-  const isProtected = pathname.startsWith('/dashboard');
+  // Protezione rotte: /dashboard, /admin e le loro sottorotte richiedono auth.
+  const isProtected =
+    pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();

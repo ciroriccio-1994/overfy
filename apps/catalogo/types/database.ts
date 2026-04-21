@@ -1,7 +1,8 @@
 // apps/catalogo/types/database.ts
 //
 // Tipi TypeScript per lo schema Supabase Overfy.
-// Tenuti sincronizzati a mano con SUPABASE_SCHEMA.sql.
+// Tenuti sincronizzati a mano con SUPABASE_SCHEMA.sql + SUPABASE_PATCH_2.sql +
+// SUPABASE_PATCH_3.sql.
 //
 // Se in futuro vuoi generarli automaticamente:
 //   npx supabase gen types typescript --project-id ukespvqmqrglsexcmrzt > types/database.ts
@@ -35,6 +36,9 @@ export interface ProfileRow {
   vat_number: string | null;
   fiscal_code: string | null;
   country: string | null;
+  stripe_customer_id: string | null;      // Patch 2
+  terms_accepted_at: string | null;        // Patch 2
+  is_admin: boolean;                        // Patch 3
   created_at: string;
   updated_at: string;
 }
@@ -82,7 +86,8 @@ export interface LeadRow {
 // Insert / Update types (per operazioni di scrittura)
 // ---------------------------------------------------------------------------
 
-export type ProfileInsert = Omit<ProfileRow, 'created_at' | 'updated_at'> & {
+export type ProfileInsert = Omit<ProfileRow, 'created_at' | 'updated_at' | 'is_admin'> & {
+  is_admin?: boolean;
   created_at?: string;
   updated_at?: string;
 };
