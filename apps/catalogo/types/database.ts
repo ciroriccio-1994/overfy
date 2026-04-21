@@ -1,6 +1,8 @@
 // apps/catalogo/types/database.ts
 //
 // Tipi TypeScript per lo schema Supabase Overfy.
+//
+// Patch 2026-04-21: aggiunti tipi per referral_credits, agents, agent_commissions.
 
 export type PlanTier = 'essenziale' | 'professionale' | 'business' | 'su_misura';
 
@@ -24,6 +26,17 @@ export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost
  */
 export type BillingInterval = 'month' | 'quarter' | 'year';
 
+export type ReferralCreditStatus =
+  | 'pending'
+  | 'consolidated'
+  | 'applied'
+  | 'consumed'
+  | 'voided';
+
+export type AgentStatus = 'active' | 'suspended' | 'terminated';
+
+export type AgentCommissionStatus = 'pending' | 'payable' | 'paid' | 'voided';
+
 // ---------------------------------------------------------------------------
 // Row types
 // ---------------------------------------------------------------------------
@@ -40,6 +53,9 @@ export interface ProfileRow {
   stripe_customer_id: string | null;
   terms_accepted_at: string | null;
   is_admin: boolean;
+  referral_code: string | null;
+  referred_by_user_id: string | null;
+  acquired_by_agent_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -83,6 +99,67 @@ export interface LeadRow {
   updated_at: string;
 }
 
+export interface ReferralCreditRow {
+  id: string;
+  referrer_user_id: string;
+  referred_user_id: string;
+  stripe_charge_id: string | null;
+  stripe_invoice_id: string | null;
+  stripe_payment_intent_id: string | null;
+  referred_first_payment_at: string;
+  consolidated_at: string;
+  applied_at: string | null;
+  applied_to_subscription_id: string | null;
+  stripe_coupon_id: string | null;
+  application_attempts: number;
+  application_error: string | null;
+  consumed_at: string | null;
+  applied_to_invoice_id: string | null;
+  voided_at: string | null;
+  voided_reason: string | null;
+  status: ReferralCreditStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentRow {
+  id: string;
+  code: string;
+  view_token: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  vat_number: string | null;
+  iban: string | null;
+  notes: string | null;
+  status: AgentStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentCommissionRow {
+  id: string;
+  agent_id: string;
+  customer_user_id: string;
+  stripe_subscription_id: string;
+  stripe_invoice_id: string;
+  stripe_charge_id: string | null;
+  stripe_payment_intent_id: string | null;
+  plan_tier: PlanTier;
+  billing_interval: BillingInterval;
+  amount_eur: number;
+  customer_paid_at: string;
+  consolidated_at: string;
+  paid_at: string | null;
+  payout_reference: string | null;
+  payout_notes: string | null;
+  voided_at: string | null;
+  voided_reason: string | null;
+  status: AgentCommissionStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---------------------------------------------------------------------------
 // Insert / Update types
 // ---------------------------------------------------------------------------
@@ -111,6 +188,15 @@ export type LeadInsert = Omit<LeadRow, 'id' | 'status' | 'metadata' | 'created_a
   updated_at?: string;
 };
 
+export type AgentInsert = Omit<AgentRow, 'id' | 'created_at' | 'updated_at' | 'status'> & {
+  id?: string;
+  status?: AgentStatus;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type AgentUpdate = Partial<Omit<AgentRow, 'id' | 'created_at'>>;
+
 // ---------------------------------------------------------------------------
 // Database type
 // ---------------------------------------------------------------------------
@@ -137,6 +223,36 @@ export interface Database {
         Row: LeadRow;
         Insert: LeadInsert;
         Update: Partial<LeadRow>;
+      };
+      referral_credits: {
+        Row: ReferralCreditRow;
+        Insert: Partial<ReferralCreditRow> & {
+          referrer_user_id: string;
+          referred_user_id: string;
+          referred_first_payment_at: string;
+          consolidated_at: string;
+        };
+        Update: Partial<ReferralCreditRow>;
+      };
+      agents: {
+        Row: AgentRow;
+        Insert: AgentInsert;
+        Update: AgentUpdate;
+      };
+      agent_commissions: {
+        Row: AgentCommissionRow;
+        Insert: Partial<AgentCommissionRow> & {
+          agent_id: string;
+          customer_user_id: string;
+          stripe_subscription_id: string;
+          stripe_invoice_id: string;
+          plan_tier: PlanTier;
+          billing_interval: BillingInterval;
+          amount_eur: number;
+          customer_paid_at: string;
+          consolidated_at: string;
+        };
+        Update: Partial<AgentCommissionRow>;
       };
     };
     Enums: {

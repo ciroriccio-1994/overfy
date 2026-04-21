@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SubscriptionRow } from '@/types/database';
 import type { ProfileRowWithAdmin } from '@/lib/auth-helpers';
 import type { InvoiceLite, PlanInfo } from './page';
@@ -107,21 +107,9 @@ export function DashboardClient({ profile, subscription, planInfo, invoices, aut
         <ProfileForm profile={profile} />
       </SectionCard>
 
-      {/* SEZIONE 4 — INVITA UN AMICO (placeholder Patch 4) */}
+      {/* SEZIONE 4 — INVITA UN AMICO (patch 2026-04-21) */}
       <SectionCard label="Invita un amico">
-        <div
-          className="rounded-xl p-5 border border-dashed"
-          style={{ borderColor: 'var(--color-line)', background: 'var(--color-bg)' }}
-        >
-          <div className="text-sm font-medium text-[var(--color-ink)] mb-1">
-            In arrivo
-          </div>
-          <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
-            Tra poco potrai invitare amici e ottenere <strong>50% di sconto</strong> sul tuo
-            prossimo mese (o <strong>un mese gratis</strong> sul piano annuale) quando il
-            loro primo pagamento va a buon fine.
-          </p>
-        </div>
+        <ReferralBlock hasSub={!!subscription && subscription.status === 'active'} />
       </SectionCard>
 
       {/* SEZIONE 5 — SUPPORTO + LOGOUT */}
@@ -365,6 +353,236 @@ function InvoiceStatusPill({ status }: { status: string | null }) {
     >
       {cfg.label}
     </span>
+  );
+}
+
+/* =============================================================== */
+/* REFERRAL BLOCK                                                  */
+/* =============================================================== */
+
+interface ReferralData {
+  code: string;
+  signupLink: string;
+  stats: {
+    pending: number;
+    consolidated: number;
+    applied: number;
+    consumed: number;
+    voided: number;
+    total: number;
+  };
+  cap: number;
+  capReached: boolean;
+  nextUnlock: { date: string; status: 'pending' | 'consolidated' } | null;
+}
+
+function ReferralBlock({ hasSub }: { hasSub: boolean }) {
+  const [data, setData] = useState<ReferralData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<'code' | 'link' | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    async function load() {
+      try {
+        const res = await fetch('/api/dashboard/referral');
+        const json = await res.json();
+        if (!alive) return;
+        if (!res.ok) {
+          setError(json?.error || 'Errore nel caricamento.');
+        } else {
+          setData(json);
+        }
+      } catch (err) {
+        if (alive) setError(err instanceof Error ? err.message : 'Errore di rete.');
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function copyToClipboard(value: string, kind: 'code' | 'link') {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(kind);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      // fallback silenzioso
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="text-sm text-[var(--color-ink-soft)]">Caricamento…</div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="text-sm" style={{ color: 'var(--color-coral-ink)' }}>
+        {error || 'Dati non disponibili.'}
+      </div>
+    );
+  }
+
+  const openCount = data.stats.pending + data.stats.consolidated + data.stats.applied;
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
+        Invita amici imprenditori. Quando il loro primo pagamento è confermato (30 giorni
+        senza rimborsi), ottieni <strong className="text-[var(--color-ink)]">-50% sul tuo
+        prossimo rinnovo</strong>. Nessun limite di durata, nessuna scadenza.
+      </p>
+
+      {/* CODICE + LINK */}
+      <div className="grid md:grid-cols-2 gap-3">
+        <div
+          className="rounded-xl p-4 border border-[var(--color-line)] bg-[var(--color-bg)]"
+        >
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">
+            Il tuo codice
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="font-mono text-base font-semibold text-[var(--color-ink)] tracking-wide">
+              {data.code}
+            </div>
+            <button
+              onClick={() => copyToClipboard(data.code, 'code')}
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-[var(--color-line)] hover:bg-[var(--color-paper)] transition text-[var(--color-ink)]"
+            >
+              {copied === 'code' ? '✓ Copiato' : 'Copia'}
+            </button>
+          </div>
+        </div>
+
+        <div
+          className="rounded-xl p-4 border border-[var(--color-line)] bg-[var(--color-bg)]"
+        >
+          <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">
+            Link diretto da inviare
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs text-[var(--color-ink)] truncate" title={data.signupLink}>
+              {data.signupLink.replace(/^https?:\/\//, '')}
+            </div>
+            <button
+              onClick={() => copyToClipboard(data.signupLink, 'link')}
+              className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-full bg-[var(--color-ink)] text-[var(--color-paper)] hover:bg-[var(--color-mint-ink)] transition"
+            >
+              {copied === 'link' ? '✓ Copiato' : 'Copia link'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile label="In arrivo" value={data.stats.pending} tooltip="Amici che hanno pagato. Sblocco tra max 30 giorni." />
+        <StatTile
+          label="Pronti"
+          value={data.stats.consolidated + data.stats.applied}
+          accent="mint"
+          tooltip="Sconti confermati. Applicati al prossimo rinnovo."
+        />
+        <StatTile label="Usati" value={data.stats.consumed} tooltip="Sconti già scalati dalla tua fattura." />
+      </div>
+
+      {/* NEXT UNLOCK */}
+      {data.nextUnlock && data.nextUnlock.status === 'pending' && (
+        <div
+          className="rounded-xl p-4 border"
+          style={{ background: 'var(--color-sky-soft)', borderColor: 'var(--color-sky-ink)' }}
+        >
+          <div className="text-xs text-[var(--color-sky-ink)] leading-relaxed">
+            Prossimo sblocco il{' '}
+            <strong>
+              {new Date(data.nextUnlock.date).toLocaleDateString('it-IT', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </strong>
+            .
+          </div>
+        </div>
+      )}
+
+      {/* CAP INDICATOR */}
+      {data.capReached && (
+        <div
+          className="rounded-xl p-4 border"
+          style={{ background: 'var(--color-coral-soft)', borderColor: 'var(--color-coral-ink)' }}
+        >
+          <div className="text-xs text-[var(--color-coral-ink)] leading-relaxed">
+            Hai raggiunto il limite di {data.cap} sconti in coda. Ti stiamo applicando
+            gli sconti ai rinnovi — quando ne avrai consumati alcuni, potrai invitare altri amici.
+          </div>
+        </div>
+      )}
+
+      {/* WARNING se non ha sub */}
+      {!hasSub && (
+        <div
+          className="rounded-xl p-4 border"
+          style={{ background: 'var(--color-bg-soft)', borderColor: 'var(--color-line)' }}
+        >
+          <div className="text-xs text-[var(--color-ink-soft)] leading-relaxed">
+            Nota: gli sconti si applicano sui rinnovi. Servirà un abbonamento attivo per
+            usare gli sconti accumulati.
+          </div>
+        </div>
+      )}
+
+      <div className="text-xs text-[var(--color-muted)] leading-relaxed">
+        {openCount}/{data.cap} sconti in coda · Credito di {data.stats.consumed}
+        {' '}sconto{data.stats.consumed === 1 ? '' : 'i'} già usato{data.stats.consumed === 1 ? '' : 'i'}.
+      </div>
+    </div>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  accent,
+  tooltip,
+}: {
+  label: string;
+  value: number;
+  accent?: 'mint' | 'sky';
+  tooltip?: string;
+}) {
+  const bg =
+    accent === 'mint'
+      ? 'var(--color-mint-soft)'
+      : accent === 'sky'
+      ? 'var(--color-sky-soft)'
+      : 'var(--color-bg)';
+  const color =
+    accent === 'mint'
+      ? 'var(--color-mint-ink)'
+      : accent === 'sky'
+      ? 'var(--color-sky-ink)'
+      : 'var(--color-ink)';
+  return (
+    <div
+      className="rounded-xl p-4 border border-[var(--color-line)]"
+      style={{ background: bg }}
+      title={tooltip}
+    >
+      <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">
+        {label}
+      </div>
+      <div className="font-display text-3xl leading-none" style={{ color }}>
+        {value}
+      </div>
+    </div>
   );
 }
 

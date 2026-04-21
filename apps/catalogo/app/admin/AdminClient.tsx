@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { LeadStatus } from '@/types/database';
 import type {
@@ -82,14 +82,12 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
     currency: 'EUR',
   });
 
-  // Callback aperti: request_callback=true e status='new'
   const callbackLeads = leads
     .filter((l) => l.request_callback === true && l.status === 'new')
     .sort((a, b) => {
       const urgencyA = TIME_URGENCY[a.preferred_time || 'today_2h'] ?? 0;
       const urgencyB = TIME_URGENCY[b.preferred_time || 'today_2h'] ?? 0;
-      if (urgencyA !== urgencyB) return urgencyB - urgencyA; // urgenza desc
-      // Stessa urgenza → più recente prima
+      if (urgencyA !== urgencyB) return urgencyB - urgencyA;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
@@ -136,7 +134,7 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
         </div>
       )}
 
-      {/* CALLBACK URGENTI — visibile solo se ce ne sono */}
+      {/* CALLBACK URGENTI */}
       {callbackLeads.length > 0 && (
         <>
           <style
@@ -363,6 +361,12 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
         )}
       </Section>
 
+      {/* AGENTS — nuova sezione (patch 2026-04-21) */}
+      <AgentsSection />
+
+      {/* REFERRALS — nuova sezione (patch 2026-04-21) */}
+      <ReferralsSection />
+
       {/* SUBS ATTIVE */}
       <Section title="Abbonamenti attivi" count={subs.length}>
         {subs.length === 0 ? (
@@ -429,6 +433,560 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
         )}
       </Section>
     </>
+  );
+}
+
+/* =============================================================== */
+/* AGENTS SECTION (patch 2026-04-21)                               */
+/* =============================================================== */
+
+interface AgentListRow {
+  id: string;
+  code: string;
+  view_token: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  vat_number: string | null;
+  iban: string | null;
+  notes: string | null;
+  status: 'active' | 'suspended' | 'terminated';
+  signup_link: string;
+  dashboard_link: string;
+  stats: {
+    pending: number;
+    payable: number;
+    paid: number;
+    voided: number;
+    total: number;
+  };
+  created_at: string;
+}
+
+function AgentsSection() {
+  const [agents, setAgents] = useState<AgentListRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Payable totale per CTA payout
+  const [payoutTotal, setPayoutTotal] = useState<{ count: number; amount: number } | null>(null);
+
+  const loadAgents = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/agents');
+      const data = await res.json();
+      if (res.ok) {
+        setAgents(data.agents || []);
+      } else {
+        setError(data?.error || 'Errore nel caricamento agent.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore di rete.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadPayable = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/agents/payouts?status=payable');
+      const data = await res.json();
+      if (res.ok && data?.totals) {
+        setPayoutTotal({ count: data.totals.count, amount: Number(data.totals.amount_eur) });
+      }
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAgents();
+    loadPayable();
+  }, [loadAgents, loadPayable]);
+
+  async function handleExportCsv() {
+    window.location.href = '/api/admin/agents/payouts?format=csv&status=payable';
+  }
+
+  return (
+    <Section title="Programma Agent" count={agents.length}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+        <p className="text-xs text-[var(--color-ink-soft)] leading-relaxed max-w-xl">
+          Agent commerciali che portano clienti Overfy. Commissione variabile per piano e intervallo
+          (configurata in <code className="font-mono text-[11px]">lib/commissions.ts</code>). Clawback
+          automatico 30gg su refund.
+        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          {payoutTotal && payoutTotal.count > 0 && (
+            <button
+              onClick={handleExportCsv}
+              className="text-xs font-medium px-4 py-2 rounded-full border border-[var(--color-line)] text-[var(--color-ink)] hover:bg-[var(--color-bg)] transition whitespace-nowrap"
+            >
+              ⬇ CSV bonifici ({payoutTotal.count} · €{payoutTotal.amount.toFixed(0)})
+            </button>
+          )}
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="text-xs font-medium px-4 py-2 rounded-full bg-[var(--color-ink)] text-[var(--color-paper)] hover:bg-[var(--color-mint-ink)] transition whitespace-nowrap"
+          >
+            {showForm ? '− Chiudi' : '+ Nuovo agent'}
+          </button>
+        </div>
+      </div>
+
+      {showForm && (
+        <AgentCreateForm
+          onCreated={() => {
+            setShowForm(false);
+            loadAgents();
+          }}
+        />
+      )}
+
+      {error && (
+        <div
+          className="mb-4 p-3 rounded-lg text-xs"
+          style={{ background: 'var(--color-coral-soft)', color: 'var(--color-coral-ink)' }}
+        >
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <EmptyRow text="Caricamento…" />
+      ) : agents.length === 0 ? (
+        <EmptyRow text="Nessun agent. Clicca “Nuovo agent” per aggiungerne uno." />
+      ) : (
+        <div className="overflow-x-auto -mx-6 md:mx-0">
+          <table className="w-full text-sm min-w-[900px]">
+            <thead>
+              <tr className="text-left text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] border-b border-[var(--color-line)]">
+                <Th>Agent</Th>
+                <Th>Codice</Th>
+                <Th>Maturazione</Th>
+                <Th>Bonificabile</Th>
+                <Th>Bonificato</Th>
+                <Th>Link</Th>
+                <Th>Stato</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((a) => (
+                <AgentRow key={a.id} agent={a} onChanged={loadAgents} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Section>
+  );
+}
+
+function AgentRow({ agent, onChanged }: { agent: AgentListRow; onChanged: () => void }) {
+  const [busy, setBusy] = useState(false);
+
+  async function changeStatus(newStatus: 'active' | 'suspended' | 'terminated') {
+    if (newStatus === 'terminated' && !confirm(`Terminare ${agent.full_name}? Le commissioni già generate restano intatte.`)) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await fetch(`/api/admin/agents/${agent.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copy(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      // silent
+    }
+  }
+
+  return (
+    <tr className="border-b border-[var(--color-line)]">
+      <Td>
+        <div className="text-[var(--color-ink)]">{agent.full_name}</div>
+        <div className="text-xs font-mono text-[var(--color-muted)]">{agent.email}</div>
+        {agent.iban && (
+          <div className="text-[10px] font-mono text-[var(--color-ink-soft)] mt-0.5">
+            IBAN: {agent.iban.slice(0, 4)}…{agent.iban.slice(-4)}
+          </div>
+        )}
+      </Td>
+      <Td>
+        <span className="text-xs font-mono font-semibold">{agent.code}</span>
+      </Td>
+      <Td>
+        <span className="text-xs font-mono text-[var(--color-ink-soft)]">
+          €{agent.stats.pending.toFixed(0)}
+        </span>
+      </Td>
+      <Td>
+        <span
+          className="text-xs font-mono font-semibold"
+          style={{ color: agent.stats.payable > 0 ? 'var(--color-mint-ink)' : 'var(--color-muted)' }}
+        >
+          €{agent.stats.payable.toFixed(0)}
+        </span>
+      </Td>
+      <Td>
+        <span className="text-xs font-mono text-[var(--color-sky-ink)]">
+          €{agent.stats.paid.toFixed(0)}
+        </span>
+      </Td>
+      <Td>
+        <div className="flex gap-1.5 flex-wrap">
+          <button
+            onClick={() => copy(agent.signup_link)}
+            className="text-[10px] font-mono px-2 py-1 rounded border border-[var(--color-line)] hover:bg-[var(--color-bg)] transition"
+            title="Copia link signup"
+          >
+            ref
+          </button>
+          <a
+            href={agent.dashboard_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-mono px-2 py-1 rounded border border-[var(--color-line)] hover:bg-[var(--color-bg)] transition"
+            title="Apri dashboard agent"
+          >
+            dash ↗
+          </a>
+        </div>
+      </Td>
+      <Td>
+        <select
+          value={agent.status}
+          onChange={(e) => changeStatus(e.target.value as 'active' | 'suspended' | 'terminated')}
+          disabled={busy}
+          className="text-xs font-mono px-2 py-1 rounded border border-[var(--color-line)] bg-[var(--color-bg)] focus:outline-none disabled:opacity-60"
+        >
+          <option value="active">active</option>
+          <option value="suspended">suspended</option>
+          <option value="terminated">terminated</option>
+        </select>
+      </Td>
+    </tr>
+  );
+}
+
+function AgentCreateForm({ onCreated }: { onCreated: () => void }) {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [vatNumber, setVatNumber] = useState('');
+  const [iban, setIban] = useState('');
+  const [notes, setNotes] = useState('');
+  const [sendEmail, setSendEmail] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: fullName,
+          email,
+          phone: phone || null,
+          vat_number: vatNumber || null,
+          iban: iban || null,
+          notes: notes || null,
+          send_email: sendEmail,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErr(data?.error || 'Errore nella creazione.');
+      } else {
+        onCreated();
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Errore di rete.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={submit}
+      className="mb-5 p-5 rounded-xl border border-[var(--color-line)] bg-[var(--color-bg)]"
+    >
+      <div className="grid md:grid-cols-2 gap-3 mb-3">
+        <AdminField label="Nome e cognome *" value={fullName} onChange={setFullName} required />
+        <AdminField label="Email *" value={email} onChange={setEmail} type="email" required />
+        <AdminField label="Telefono" value={phone} onChange={setPhone} />
+        <AdminField label="Partita IVA" value={vatNumber} onChange={setVatNumber} />
+        <div className="md:col-span-2">
+          <AdminField label="IBAN" value={iban} onChange={setIban} placeholder="IT60X0542811101000000123456" />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">
+            Note interne
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            className="w-full px-3 py-2 rounded border border-[var(--color-line)] bg-[var(--color-paper)] text-[var(--color-ink)] text-sm focus:outline-none focus:border-[var(--color-ink)]"
+          />
+        </div>
+      </div>
+
+      <label className="flex items-center gap-2 mb-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={sendEmail}
+          onChange={(e) => setSendEmail(e.target.checked)}
+          className="h-4 w-4 accent-[var(--color-mint-ink)]"
+        />
+        <span className="text-xs text-[var(--color-ink-soft)]">
+          Invia email onboarding (con codice + link dashboard)
+        </span>
+      </label>
+
+      {err && (
+        <div
+          className="mb-3 p-2 rounded text-xs"
+          style={{ background: 'var(--color-coral-soft)', color: 'var(--color-coral-ink)' }}
+        >
+          {err}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="text-xs font-medium px-4 py-2 rounded-full bg-[var(--color-ink)] text-[var(--color-paper)] hover:bg-[var(--color-mint-ink)] transition disabled:opacity-60"
+        >
+          {submitting ? 'Creazione…' : 'Crea agent'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function AdminField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+  required = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-2">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        className="w-full px-3 py-2 rounded border border-[var(--color-line)] bg-[var(--color-paper)] text-[var(--color-ink)] text-sm focus:outline-none focus:border-[var(--color-ink)]"
+      />
+    </div>
+  );
+}
+
+/* =============================================================== */
+/* REFERRALS SECTION (patch 2026-04-21)                            */
+/* =============================================================== */
+
+interface ReferralAdminRow {
+  id: string;
+  status: string;
+  created_at: string;
+  consolidated_at: string;
+  applied_at: string | null;
+  consumed_at: string | null;
+  voided_at: string | null;
+  voided_reason: string | null;
+  referrer: { id: string; email: string; full_name: string | null } | null;
+  referred: { id: string; email: string; full_name: string | null } | null;
+}
+
+interface ReferralAggregates {
+  total: number;
+  pending: number;
+  consolidated: number;
+  applied: number;
+  consumed: number;
+  voided: number;
+}
+
+function ReferralsSection() {
+  const [credits, setCredits] = useState<ReferralAdminRow[]>([]);
+  const [agg, setAgg] = useState<ReferralAggregates | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    async function load() {
+      try {
+        const res = await fetch('/api/admin/referrals');
+        const data = await res.json();
+        if (!alive) return;
+        if (res.ok) {
+          setCredits(data.credits || []);
+          setAgg(data.aggregates || null);
+        }
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return (
+    <Section title="Referral Amico" count={credits.length}>
+      {agg && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
+          <MiniStat label="Pending" value={agg.pending} />
+          <MiniStat label="Consolidated" value={agg.consolidated} accent="mint" />
+          <MiniStat label="Applied" value={agg.applied} accent="sky" />
+          <MiniStat label="Consumed" value={agg.consumed} />
+          <MiniStat label="Voided" value={agg.voided} accent="coral" />
+        </div>
+      )}
+
+      {loading ? (
+        <EmptyRow text="Caricamento…" />
+      ) : credits.length === 0 ? (
+        <EmptyRow text="Nessun referral credit ancora." />
+      ) : (
+        <div className="overflow-x-auto -mx-6 md:mx-0">
+          <table className="w-full text-sm min-w-[820px]">
+            <thead>
+              <tr className="text-left text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] border-b border-[var(--color-line)]">
+                <Th>Referrer</Th>
+                <Th>Referred</Th>
+                <Th>Status</Th>
+                <Th>Consolidato</Th>
+                <Th>Applicato</Th>
+                <Th>Note</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {credits.map((c) => (
+                <tr key={c.id} className="border-b border-[var(--color-line)]">
+                  <Td>
+                    <div className="text-[var(--color-ink)]">
+                      {c.referrer?.full_name || c.referrer?.email || '—'}
+                    </div>
+                    <div className="text-xs font-mono text-[var(--color-muted)]">
+                      {c.referrer?.email || '—'}
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="text-[var(--color-ink)]">
+                      {c.referred?.full_name || c.referred?.email || '—'}
+                    </div>
+                    <div className="text-xs font-mono text-[var(--color-muted)]">
+                      {c.referred?.email || '—'}
+                    </div>
+                  </Td>
+                  <Td>
+                    <ReferralStatusPill status={c.status} />
+                  </Td>
+                  <Td>
+                    <span className="text-xs font-mono text-[var(--color-muted)] whitespace-nowrap">
+                      {formatDate(c.consolidated_at)}
+                    </span>
+                  </Td>
+                  <Td>
+                    <span className="text-xs font-mono text-[var(--color-muted)] whitespace-nowrap">
+                      {c.applied_at ? formatDate(c.applied_at) : '—'}
+                    </span>
+                  </Td>
+                  <Td>
+                    <span className="text-[10px] font-mono text-[var(--color-ink-soft)]">
+                      {c.voided_reason || '—'}
+                    </span>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Section>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: 'mint' | 'sky' | 'coral';
+}) {
+  const color =
+    accent === 'mint'
+      ? 'var(--color-mint-ink)'
+      : accent === 'sky'
+      ? 'var(--color-sky-ink)'
+      : accent === 'coral'
+      ? 'var(--color-coral-ink)'
+      : 'var(--color-ink)';
+  return (
+    <div className="rounded-xl px-3 py-2 border border-[var(--color-line)] bg-[var(--color-bg)]">
+      <div className="text-[10px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
+        {label}
+      </div>
+      <div className="text-xl font-display leading-none mt-1" style={{ color }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function ReferralStatusPill({ status }: { status: string }) {
+  const map: Record<string, { label: string; bg: string; color: string }> = {
+    pending: { label: 'pending', bg: 'var(--color-bg-soft)', color: 'var(--color-muted)' },
+    consolidated: { label: 'consolidated', bg: 'var(--color-mint-soft)', color: 'var(--color-mint-ink)' },
+    applied: { label: 'applied', bg: 'var(--color-sky-soft)', color: 'var(--color-sky-ink)' },
+    consumed: { label: 'consumed', bg: 'var(--color-bg-soft)', color: 'var(--color-muted)' },
+    voided: { label: 'voided', bg: 'var(--color-coral-soft)', color: 'var(--color-coral-ink)' },
+  };
+  const cfg = map[status] || { label: status, bg: 'var(--color-bg-soft)', color: 'var(--color-muted)' };
+  return (
+    <span
+      className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full"
+      style={{ background: cfg.bg, color: cfg.color }}
+    >
+      {cfg.label}
+    </span>
   );
 }
 

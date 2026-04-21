@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 const ANIMATION_CSS = `
@@ -37,11 +37,19 @@ const ANIMATION_CSS = `
 }
 `;
 
+// Chiavi sessionStorage per persistere i codici attraverso la verifica email
+const REF_STORAGE_KEY = 'overfy_referral_code';
+const AGENT_STORAGE_KEY = 'overfy_agent_code';
+
 export function RegistratiForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan');
   const interval = searchParams.get('interval');
+
+  // Cattura codici da URL (?ref= o ?agent=). Li normalizziamo a UPPERCASE.
+  const urlRefCode = searchParams.get('ref');
+  const urlAgentCode = searchParams.get('agent');
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -51,6 +59,34 @@ export function RegistratiForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+
+  // Persisti i codici in sessionStorage così sopravvivono alla verifica email.
+  // Al ritorno sul /auth/callback saranno inclusi nel user_metadata (già lì).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (urlRefCode) {
+      sessionStorage.setItem(REF_STORAGE_KEY, urlRefCode.toUpperCase());
+    }
+    if (urlAgentCode) {
+      sessionStorage.setItem(AGENT_STORAGE_KEY, urlAgentCode.toUpperCase());
+    }
+  }, [urlRefCode, urlAgentCode]);
+
+  const effectiveRefCode = useMemo(() => {
+    if (urlRefCode) return urlRefCode.toUpperCase();
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem(REF_STORAGE_KEY) || null;
+    }
+    return null;
+  }, [urlRefCode]);
+
+  const effectiveAgentCode = useMemo(() => {
+    if (urlAgentCode) return urlAgentCode.toUpperCase();
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem(AGENT_STORAGE_KEY) || null;
+    }
+    return null;
+  }, [urlAgentCode]);
 
   useEffect(() => {
     if (alreadyRegistered) setAlreadyRegistered(false);
@@ -88,15 +124,21 @@ export function RegistratiForm() {
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // Costruisci user_metadata includendo i codici di attribution.
+    // Il route /auth/callback li risolverà e aggiornerà profiles.
+    const userData: Record<string, unknown> = {
+      full_name: fullName.trim() || null,
+      terms_accepted: true,
+      recess_waived: true,
+    };
+    if (effectiveRefCode) userData.referral_code = effectiveRefCode;
+    if (effectiveAgentCode) userData.agent_code = effectiveAgentCode;
+
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
-        data: {
-          full_name: fullName.trim() || null,
-          terms_accepted: true,
-          recess_waived: true,
-        },
+        data: userData,
         emailRedirectTo,
       },
     });
@@ -148,6 +190,24 @@ export function RegistratiForm() {
             Stai attivando il piano <strong>{plan.charAt(0).toUpperCase() + plan.slice(1)}</strong>
             {interval === 'year' ? ' (annuale)' : interval === 'quarter' ? ' (trimestrale)' : ' (mensile)'}.
             Dopo la conferma email procederai al pagamento.
+          </div>
+        )}
+
+        {effectiveRefCode && !plan && (
+          <div
+            className="overfy-anim-item mb-6 p-4 rounded-xl text-sm"
+            style={{ ...d(0), background: 'var(--color-mint-soft)', color: 'var(--color-mint-ink)' }}
+          >
+            🎁 Ti ha invitato un amico. Codice: <strong>{effectiveRefCode}</strong>
+          </div>
+        )}
+
+        {effectiveAgentCode && !effectiveRefCode && !plan && (
+          <div
+            className="overfy-anim-item mb-6 p-4 rounded-xl text-sm"
+            style={{ ...d(0), background: 'var(--color-sky-soft)', color: 'var(--color-sky-ink)' }}
+          >
+            Acquisizione tramite agent: <strong>{effectiveAgentCode}</strong>
           </div>
         )}
 
