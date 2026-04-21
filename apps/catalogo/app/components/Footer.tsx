@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import Image from "next/image";
 
 export function FinalCta() {
@@ -101,6 +101,13 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
               <li><a href="mailto:info@overfydigital.com" className="hover:text-[var(--color-ink)] transition">info@overfydigital.com</a></li>
               <li><Link href="/contatti" className="hover:text-[var(--color-ink)] transition">Form contatti</Link></li>
+            </ul>
+            <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 mt-6">
+              Legale
+            </div>
+            <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
+              <li><Link href="/termini" className="hover:text-[var(--color-ink)] transition">Termini di servizio</Link></li>
+              <li><Link href="/rimborsi" className="hover:text-[var(--color-ink)] transition">Policy rimborsi</Link></li>
             </ul>
           </div>
         </div>
