@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import Image from "next/image";
 
 export function FinalCta() {
@@ -97,7 +97,7 @@ export function Footer() {
               Programmi
             </div>
             <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
-              <li><Link href="/invita" className="hover:text-[var(--color-ink)] transition">Invita un amico · -50%</Link></li>
+              <li><Link href="/invita" className="hover:text-[var(--color-ink)] transition">Invita un amico</Link></li>
               <li><Link href="/agenti" className="hover:text-[var(--color-ink)] transition">Diventa agent</Link></li>
             </ul>
           </div>
