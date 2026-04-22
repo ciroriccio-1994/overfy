@@ -4,7 +4,7 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Invita un amico â€” -50% sul prossimo rinnovo Â· Overfy',
+  title: 'Invita un amico — -50% sul prossimo rinnovo · Overfy',
   description:
     'Porta un imprenditore su Overfy e ricevi il 50% di sconto sul tuo prossimo rinnovo. Automatico, nessuna scadenza.',
 };
@@ -38,7 +38,7 @@ export default function InvitaPage() {
             className="overfy-heading-item text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)] transition mb-6 inline-block"
             style={{ animationDelay: '0ms' }}
           >
-            â† Torna alla home
+            ← Torna alla home
           </Link>
 
           <div
@@ -55,7 +55,7 @@ export default function InvitaPage() {
             Porti un amico.
             <br />
             <em className="font-display-italic text-[var(--color-mint-ink)]">
-              Il prossimo rinnovo Ã¨ al -50%.
+              Il prossimo rinnovo è al -50%.
             </em>
           </h1>
 
@@ -63,7 +63,7 @@ export default function InvitaPage() {
             className="overfy-heading-item text-lg md:text-xl text-[var(--color-ink-soft)] leading-relaxed max-w-3xl mb-10"
             style={{ animationDelay: '140ms' }}
           >
-            Sei giÃ  cliente Overfy? Hai colleghi, parenti, clienti del tuo negozio che potrebbero aver bisogno di digitalizzarsi? Per ogni amico che diventa cliente, sblocchi uno sconto del 50% sul tuo prossimo rinnovo. Automatico, nessuna scadenza.
+            Sei già cliente Overfy? Hai colleghi, parenti, clienti del tuo negozio che potrebbero aver bisogno di digitalizzarsi? Per ogni amico che diventa cliente, sblocchi uno sconto del 50% sul tuo prossimo rinnovo. Automatico, nessuna scadenza.
           </p>
 
           <div
@@ -74,7 +74,7 @@ export default function InvitaPage() {
               href="/dashboard#referral"
               className="bg-[var(--color-ink)] text-[var(--color-paper)] px-8 py-4 rounded-full text-sm font-medium hover:bg-[var(--color-mint-ink)] transition"
             >
-              Trova il tuo codice â†’
+              Trova il tuo codice →
             </Link>
             <Link
               href="/#pacchetti"
@@ -133,15 +133,15 @@ export default function InvitaPage() {
                 Esempio pratico
               </div>
               <h2 className="font-display text-3xl md:text-5xl leading-[1.0] text-[var(--color-ink)] tracking-tight mb-6">
-                Paghi <span className="line-through text-[var(--color-muted)]">â‚¬49,99</span>{' '}
-                <em className="font-display-italic text-[var(--color-mint-ink)]">â‚¬24,99</em>.
+                Paghi <span className="line-through text-[var(--color-muted)]">€49,99</span>{' '}
+                <em className="font-display-italic text-[var(--color-mint-ink)]">€24,99</em>.
               </h2>
               <p className="text-[var(--color-ink-soft)] leading-relaxed mb-6">
-                Sei sul piano Essenziale a â‚¬49,99/mese. Porti un amico che sceglie il piano Professionale trimestrale.
-                Dopo 30 giorni dal suo pagamento, il tuo prossimo rinnovo mensile sarÃ  di <strong>â‚¬24,99 invece di â‚¬49,99</strong>. Risparmi â‚¬25.
+                Sei sul piano Essenziale a €49,99/mese. Porti un amico che sceglie il piano Professionale trimestrale.
+                Dopo 30 giorni dal suo pagamento, il tuo prossimo rinnovo mensile sarà di <strong>€24,99 invece di €49,99</strong>. Risparmi €25.
               </p>
               <p className="text-[var(--color-ink-soft)] leading-relaxed">
-                Ne porti 2 in un mese? Salvi â‚¬25 due volte (su due rinnovi consecutivi). Ne porti 10? Hai 10 rinnovi al -50% in coda. Automatico, nessuna scadenza.
+                Ne porti 2 in un mese? Salvi €25 due volte (su due rinnovi consecutivi). Ne porti 10? Hai 10 rinnovi al -50% in coda. Automatico, nessuna scadenza.
               </p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function InvitaPage() {
                       color: 'var(--color-mint-ink)',
                     }}
                   >
-                    âœ“
+                    ✓
                   </span>
                   <div>
                     <h3 className="font-medium text-[var(--color-ink)] mb-1">{rule.title}</h3>
@@ -196,7 +196,7 @@ export default function InvitaPage() {
             href="/dashboard#referral"
             className="inline-block bg-[var(--color-ink)] text-[var(--color-paper)] px-10 py-5 rounded-full text-base font-medium hover:bg-[var(--color-mint-ink)] transition"
           >
-            Vai alla dashboard â†’
+            Vai alla dashboard →
           </Link>
         </section>
       </main>
@@ -237,7 +237,7 @@ const rules: Rule[] = [
   },
   {
     title: 'Cap di 6 sconti in coda',
-    body: 'Per evitare abusi, il massimo di sconti pendenti contemporaneamente Ã¨ 6. Quando ne consumi qualcuno (rinnovo al -50%) il contatore si libera e puoi portarne altri. Nessun limite totale.',
+    body: 'Per evitare abusi, il massimo di sconti pendenti contemporaneamente è 6. Quando ne consumi qualcuno (rinnovo al -50%) il contatore si libera e puoi portarne altri. Nessun limite totale.',
   },
   {
     title: 'Attivazione automatica a 30 giorni',
@@ -245,7 +245,7 @@ const rules: Rule[] = [
   },
   {
     title: 'Lo sconto non scade',
-    body: 'Una volta sbloccato, il credito resta lÃ¬ finchÃ© non lo usi. Se al momento non hai un abbonamento attivo, lo applichiamo al primo rinnovo successivo.',
+    body: 'Una volta sbloccato, il credito resta lì finché non lo usi. Se al momento non hai un abbonamento attivo, lo applichiamo al primo rinnovo successivo.',
   },
   {
     title: 'Niente auto-inviti',
