@@ -60,6 +60,34 @@ export function welcomeEmailHtml(args: {
         </a>
       </td></tr>
 
+      <tr><td style="padding:32px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        ${dividerHtml()}
+      </td></tr>
+
+      <tr><td style="padding:28px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <p style="font-family:'SF Mono','Monaco','Menlo','Cascadia Mono',Consolas,monospace;font-size:11px;color:#00a173;margin:0;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+          BONUS · INVITA UN AMICO
+        </p>
+      </td></tr>
+
+      <tr><td style="padding:10px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <h2 style="font-family:'Inter','SF Pro Text',-apple-system,sans-serif;font-size:22px;line-height:1.2;font-weight:600;color:#0a0a0a;margin:0;letter-spacing:-0.02em;">
+          -50% sul tuo prossimo rinnovo per ogni amico che porti.
+        </h2>
+      </td></tr>
+
+      <tr><td style="padding:14px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <p style="font-size:14px;line-height:1.65;color:#525252;margin:0;">
+          Conosci altri imprenditori che potrebbero beneficiare di Overfy? Condividi il tuo codice personale. Quando il loro primo pagamento è confermato, sblocchiamo uno sconto del 50% sul tuo prossimo rinnovo. Automatico, nessuna scadenza.
+        </p>
+      </td></tr>
+
+      <tr><td style="padding:22px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <a href="${args.dashboardUrl}#referral" style="display:inline-block;background:#ffffff;color:#0a0a0a;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;line-height:1.3;border:1px solid #e5e5e5;">
+          Trova il tuo codice referral →
+        </a>
+      </td></tr>
+
       ${footerHtml()}
 
     </table>

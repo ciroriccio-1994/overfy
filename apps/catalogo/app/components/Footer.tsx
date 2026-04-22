@@ -92,6 +92,14 @@ export function Footer() {
               <li><Link href="/modello" className="hover:text-[var(--color-ink)] transition">Il modello</Link></li>
               <li><Link href="/dettagli" className="hover:text-[var(--color-ink)] transition">Dettagli e regole</Link></li>
             </ul>
+
+            <div className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] mb-4 mt-6">
+              Programmi
+            </div>
+            <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
+              <li><Link href="/invita" className="hover:text-[var(--color-ink)] transition">Invita un amico · -50%</Link></li>
+              <li><Link href="/agenti" className="hover:text-[var(--color-ink)] transition">Diventa agent</Link></li>
+            </ul>
           </div>
 
           <div>
