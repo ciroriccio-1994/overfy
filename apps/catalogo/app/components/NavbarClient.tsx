@@ -58,13 +58,23 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center group" aria-label="Overfy">
+          {/* Mobile: logo tondo (brand icon) */}
+          <Image
+            src="/overfy-icon-512.png"
+            alt="Overfy"
+            width={64}
+            height={64}
+            priority
+            className="h-10 w-10 md:hidden"
+          />
+          {/* Desktop: logo orizzontale completo con wordmark */}
           <Image
             src="/logo-overfy-brand.png"
             alt="Overfy"
             width={200}
             height={62}
             priority
-            className="h-9 w-auto md:h-10"
+            className="hidden md:block h-10 w-auto"
           />
         </Link>
 
@@ -138,20 +148,14 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
                     </div>
                   </div>
                   <Link
-                    href="/dashboard"
-                    className="block px-4 py-3 text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-soft)] transition"
+                    href={isAdmin ? "/admin" : "/dashboard"}
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-soft)] transition"
                   >
-                    Dashboard
-                  </Link>
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-soft)] transition"
-                    >
+                    {isAdmin && (
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-mint)]"></span>
-                      Admin
-                    </Link>
-                  )}
+                    )}
+                    {isAdmin ? "Dashboard admin" : "Dashboard"}
+                  </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -182,10 +186,10 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
 
         {isAuthenticated ? (
           <Link
-            href="/dashboard"
+            href={isAdmin ? "/admin" : "/dashboard"}
             className="lg:hidden bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 rounded-full text-xs"
           >
-            Dashboard
+            {isAdmin ? "Admin" : "Dashboard"}
           </Link>
         ) : (
           <Link

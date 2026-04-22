@@ -2,8 +2,12 @@
 //
 // Dashboard utente. Single page, no sottorotte.
 // Sezioni: piano, fatture, profilo editabile, invita (placeholder), supporto.
+//
+// NOTE (Apr 22 2026): se l'utente è admin, redirige a /admin. L'area admin
+// ha la sua UI dedicata e non deve esporre la dashboard cliente.
 
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { stripe } from '@/lib/stripe';
@@ -42,6 +46,11 @@ export interface PlanInfo {
 
 export default async function DashboardPage() {
   const { userId, email, profile } = await requireUser('/dashboard');
+
+  // Admin non vede la dashboard cliente. Vai direttamente all'area admin.
+  if (profile.is_admin) {
+    redirect('/admin');
+  }
 
   const admin = createAdminClient();
   const { data: subsRaw } = await admin
