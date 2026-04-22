@@ -97,7 +97,7 @@ export function Footer() {
               Programmi
             </div>
             <ul className="space-y-2 text-sm text-[var(--color-ink-soft)]">
-              <li><Link href="/invita" className="hover:text-[var(--color-ink)] transition">Invita un amico</Link></li>
+              <li><Link href="/invita" className="hover:text-[var(--color-ink)] transition">Invita un amico - 50% sconto</Link></li>
               <li><Link href="/agenti" className="hover:text-[var(--color-ink)] transition">Diventa agent</Link></li>
             </ul>
           </div>
@@ -125,7 +125,7 @@ export function Footer() {
             © 2026 Overfy. Tutti i diritti riservati.
           </p>
           <p className="text-xs font-mono text-[var(--color-muted)] italic">
-            Il tuo business, un livello sopra.
+            Digitalizzazione in 48 ore.
           </p>
         </div>
       </div>

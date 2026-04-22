@@ -367,69 +367,12 @@ export function AdminClient({ kpi, users, subs, leads: initialLeads }: Props) {
       {/* REFERRALS — nuova sezione (patch 2026-04-21) */}
       <ReferralsSection />
 
-      {/* SUBS ATTIVE */}
+      {/* SUBS ATTIVE — breakdown per piano */}
       <Section title="Abbonamenti attivi" count={subs.length}>
         {subs.length === 0 ? (
           <EmptyRow text="Nessun abbonamento attivo." />
         ) : (
-          <div className="overflow-x-auto -mx-6 md:mx-0">
-            <table className="w-full text-sm min-w-[720px]">
-              <thead>
-                <tr className="text-left text-xs font-mono uppercase tracking-wider text-[var(--color-muted)] border-b border-[var(--color-line)]">
-                  <Th>Cliente</Th>
-                  <Th>Piano</Th>
-                  <Th>Cadenza</Th>
-                  <Th>Stato</Th>
-                  <Th>Prossimo rinnovo</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {subs.map((s) => (
-                  <tr key={s.id} className="border-b border-[var(--color-line)]">
-                    <Td>
-                      <div className="text-[var(--color-ink)]">
-                        {s.full_name || s.email || s.user_id.slice(0, 8)}
-                      </div>
-                      {s.email && (
-                        <div className="text-xs font-mono text-[var(--color-muted)]">
-                          {s.email}
-                        </div>
-                      )}
-                    </Td>
-                    <Td>
-                      <span className="text-xs font-mono">{s.plan_tier}</span>
-                    </Td>
-                    <Td>
-                      <span className="text-xs font-mono text-[var(--color-ink-soft)]">
-                        {s.billing_interval === 'year' ? 'annuale' : 'mensile'}
-                      </span>
-                    </Td>
-                    <Td>
-                      <div className="flex items-center gap-1.5">
-                        <StatusPill status={s.status} />
-                        {s.cancel_at_period_end && (
-                          <span
-                            className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
-                            style={{
-                              background: 'var(--color-coral-soft)',
-                              color: 'var(--color-coral-ink)',
-                            }}
-                          >
-                            Cancel
-                          </span>
-                        )}
-                      </div>
-                    </Td>
-                    <Td>
-                      <span className="text-xs font-mono text-[var(--color-muted)] whitespace-nowrap">
-                        {s.current_period_end ? formatDate(s.current_period_end) : '—'}
-                      </span>
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PlanBreakdown subs={subs} />
         )}
       </Section>
     </>
@@ -1219,4 +1162,56 @@ function timeAgo(iso: string): string {
   if (diffH < 24) return `${diffH}h fa`;
   const diffD = Math.floor(diffH / 24);
   return `${diffD}g fa`;
+}
+
+/* =============================================================== */
+/* PLAN BREAKDOWN (22 Apr 2026)                                    */
+/* Mostra quanti abbonamenti ci sono per ciascun piano + %         */
+/* =============================================================== */
+
+function PlanBreakdown({ subs }: { subs: AdminSubRow[] }) {
+  const total = subs.length;
+
+  // Raggruppo per plan_tier
+  const counts = subs.reduce<Record<string, number>>((acc, s) => {
+    const tier = (s.plan_tier || 'altro').toLowerCase();
+    acc[tier] = (acc[tier] || 0) + 1;
+    return acc;
+  }, {});
+
+  const rows = [
+    { key: 'essenziale', label: 'Essenziale', accent: 'var(--color-sky-ink)', soft: 'var(--color-sky-soft)' },
+    { key: 'professionale', label: 'Professionale', accent: 'var(--color-mint-ink)', soft: 'var(--color-mint-soft)' },
+    { key: 'business', label: 'Business', accent: 'var(--color-coral-ink)', soft: 'var(--color-coral-soft)' },
+  ]
+    .map((r) => ({ ...r, count: counts[r.key] || 0 }))
+    .filter((r) => r.count > 0 || total === 0);
+
+  return (
+    <div className="space-y-3">
+      {rows.map((r) => {
+        const pct = total > 0 ? Math.round((r.count / total) * 100) : 0;
+        return (
+          <div key={r.key}>
+            <div className="flex items-baseline justify-between mb-1.5">
+              <span className="text-sm font-medium text-[var(--color-ink)]">{r.label}</span>
+              <span className="text-xs font-mono text-[var(--color-ink-soft)]">
+                {r.count} <span className="text-[var(--color-muted)]">· {pct}%</span>
+              </span>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: r.soft }}>
+              <div
+                className="h-full transition-all"
+                style={{ width: `${pct}%`, background: r.accent }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      <div className="pt-3 mt-3 border-t border-[var(--color-line)] flex items-baseline justify-between">
+        <span className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted)]">Totale</span>
+        <span className="text-sm font-medium text-[var(--color-ink)]">{total}</span>
+      </div>
+    </div>
+  );
 }
