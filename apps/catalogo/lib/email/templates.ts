@@ -14,6 +14,29 @@ export function welcomeEmailHtml(args: {
   dashboardUrl: string;
 }): string {
   const display = args.name || 'ciao';
+
+  // Sottotitoli dei 3 prossimi passi (step row).
+  const stepRow = (num: string, title: string, body: string) => `
+    <tr>
+      <td style="padding:0 0 18px 0;background:#ffffff;" bgcolor="#ffffff">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td valign="top" width="36" style="padding:2px 0 0 0;font-family:'SF Mono','Monaco','Menlo',Consolas,monospace;font-size:12px;color:#a3a3a3;letter-spacing:0.04em;font-weight:500;">
+              ${num}
+            </td>
+            <td valign="top" style="padding:0;">
+              <p style="margin:0;font-size:14px;line-height:1.45;color:#0a0a0a;font-weight:600;letter-spacing:-0.01em;">
+                ${title}
+              </p>
+              <p style="margin:4px 0 0 0;font-size:13px;line-height:1.6;color:#737373;">
+                ${body}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+
   return `<!DOCTYPE html>
 <html lang="it">
 <head>
@@ -50,17 +73,40 @@ export function welcomeEmailHtml(args: {
 
       <tr><td style="padding:16px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
         <p style="font-size:15px;line-height:1.65;color:#525252;margin:0;">
-          Il tuo piano <strong style="color:#0a0a0a;font-weight:600;">${escape(args.planName)}</strong> è attivo. Il tuo business sarà online in 48 ore — ti scriviamo a breve per raccogliere i materiali.
+          Il tuo piano <strong style="color:#0a0a0a;font-weight:600;">${escape(args.planName)}</strong> è attivo. Grazie per averci scelto — ci mettiamo subito al lavoro sul tuo progetto.
         </p>
       </td></tr>
 
-      <tr><td style="padding:28px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+      <tr><td style="padding:36px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <p style="font-family:'SF Mono','Monaco','Menlo','Cascadia Mono',Consolas,monospace;font-size:11px;color:#00a173;margin:0 0 18px 0;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+          PROSSIMI PASSI
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          ${stepRow(
+            '01',
+            'Ti contattiamo entro 24 ore',
+            'Ti scriviamo per raccogliere materiali, foto e informazioni del tuo business.',
+          )}
+          ${stepRow(
+            '02',
+            'Il tuo sito va online in 48 ore',
+            'Dal momento in cui riceviamo i contenuti. Ti mandiamo il link appena è pronto.',
+          )}
+          ${stepRow(
+            '03',
+            'Autonomia totale dalla dashboard',
+            'Aggiorni prodotti, prezzi, orari e contenuti quando vuoi. Niente sviluppatori da chiamare.',
+          )}
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:16px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
         <a href="${args.dashboardUrl}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:11px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:-0.01em;line-height:1.3;">
           Vai alla dashboard →
         </a>
       </td></tr>
 
-      <tr><td style="padding:32px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+      <tr><td style="padding:36px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
         ${dividerHtml()}
       </td></tr>
 
@@ -71,21 +117,31 @@ export function welcomeEmailHtml(args: {
       </td></tr>
 
       <tr><td style="padding:10px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
-        <h2 style="font-family:'Inter','SF Pro Text',-apple-system,sans-serif;font-size:22px;line-height:1.2;font-weight:600;color:#0a0a0a;margin:0;letter-spacing:-0.02em;">
-          -50% sul tuo prossimo rinnovo per ogni amico che porti.
+        <h2 style="font-family:'Inter','SF Pro Text',-apple-system,sans-serif;font-size:22px;line-height:1.25;font-weight:600;color:#0a0a0a;margin:0;letter-spacing:-0.02em;">
+          Porti un imprenditore? Il tuo prossimo rinnovo è al <span style="color:#00a173;">&minus;50%</span>.
         </h2>
       </td></tr>
 
       <tr><td style="padding:14px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
         <p style="font-size:14px;line-height:1.65;color:#525252;margin:0;">
-          Conosci altri imprenditori che potrebbero beneficiare di Overfy? Condividi il tuo codice personale. Quando il loro primo pagamento è confermato, sblocchiamo uno sconto del 50% sul tuo prossimo rinnovo. Automatico, nessuna scadenza.
+          Conosci altri che potrebbero aver bisogno di digitalizzarsi? Condividi il tuo codice personale. Quando il loro primo pagamento si consolida, applichiamo il &minus;50% al tuo prossimo rinnovo. Automatico, nessuna scadenza.
         </p>
       </td></tr>
 
       <tr><td style="padding:22px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
         <a href="${args.dashboardUrl}#referral" style="display:inline-block;background:#ffffff;color:#0a0a0a;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;line-height:1.3;border:1px solid #e5e5e5;">
-          Trova il tuo codice referral →
+          Copia il tuo codice →
         </a>
+      </td></tr>
+
+      <tr><td style="padding:36px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        ${dividerHtml()}
+      </td></tr>
+
+      <tr><td style="padding:24px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <p style="font-size:13px;line-height:1.65;color:#737373;margin:0;">
+          <strong style="color:#0a0a0a;font-weight:600;">P.S.</strong> Se hai domande o vuoi far partire il tuo progetto subito, rispondi a questa email. Ti risponde una persona, non un bot.
+        </p>
       </td></tr>
 
       ${footerHtml()}
