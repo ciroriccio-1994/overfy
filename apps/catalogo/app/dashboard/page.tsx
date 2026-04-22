@@ -15,7 +15,7 @@ import { PLANS, resolvePriceId } from '@/lib/plans';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { DashboardClient } from './DashboardClient';
-import type { SubscriptionRow } from '@/types/database';
+import type { SubscriptionRow, SocialAddonRow } from '@/types/database';
 
 export const metadata: Metadata = {
   title: 'Dashboard — Overfy',
@@ -95,6 +95,18 @@ export default async function DashboardPage() {
     }
   }
 
+  // Fetch social addon corrente (se ha una sub attiva)
+  let socialAddon: SocialAddonRow | null = null;
+  if (activeSub) {
+    const { data: addonRaw } = await admin
+      .from('social_addons')
+      .select('*')
+      .eq('subscription_id', activeSub.id)
+      .in('status', ['active', 'pending_cancellation'])
+      .maybeSingle();
+    socialAddon = (addonRaw as SocialAddonRow | null) ?? null;
+  }
+
   // Fetch ultime 5 invoice Stripe
   let invoices: InvoiceLite[] = [];
   if (profile.stripe_customer_id) {
@@ -129,6 +141,7 @@ export default async function DashboardPage() {
             planInfo={planInfo}
             invoices={invoices}
             authEmail={email}
+            socialAddon={socialAddon}
           />
         </div>
       </main>

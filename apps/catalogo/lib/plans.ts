@@ -173,3 +173,78 @@ export const INTERVAL_MONTHS: Record<BillingInterval, number> = {
   quarter: 3,
   year: 12,
 };
+
+// ---------------------------------------------------------------------------
+// SOCIAL ADD-ON (Apr 22 2026)
+// ---------------------------------------------------------------------------
+//
+// Add-on opzionale "Gestione social", acquistabile SOLO sopra una subscription
+// base attiva. Fatturazione mensile ricorrente aggiunta come line item alla
+// stessa Stripe Subscription della base (stessa invoice).
+//
+// - basic: €100/mese  — post + storie + community management base
+// - pro:   €200/mese  — tutto basic + reel + design custom + ADS tecnica
+
+export type SocialAddonTier = 'basic' | 'pro';
+
+export interface SocialAddonConfig {
+  tier: SocialAddonTier;
+  name: string;
+  tagline: string;
+  amountEur: number;
+  priceId: string | null;
+  features: string[];
+}
+
+export const SOCIAL_ADDONS: Record<SocialAddonTier, SocialAddonConfig> = {
+  basic: {
+    tier: 'basic',
+    name: 'Social Basic',
+    tagline: 'Presenza social costante, senza pensieri.',
+    amountEur: 100,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SOCIAL_BASIC ?? null,
+    features: [
+      'Piano editoriale mensile mirato (traffico / vendite / community)',
+      'Calendario editoriale con programmazione',
+      '3 post a settimana + 1 storia al giorno',
+      'Grafiche di base e copy professionale',
+      'Moderazione commenti e messaggi (1h/giorno)',
+    ],
+  },
+  pro: {
+    tier: 'pro',
+    name: 'Social Pro',
+    tagline: 'Crescita attiva: contenuti custom, reel, ADS e analisi.',
+    amountEur: 200,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SOCIAL_PRO ?? null,
+    features: [
+      'Tutto il piano Basic, più:',
+      'Custom Graphic Design — elementi grafici esclusivi sul brand',
+      'Content Strategy personalizzata sul cliente',
+      'Video Editing: 3 Reel/video professionali al mese',
+      'Community management avanzato (3h/giorno)',
+      'Report mensile con analisi risultati e consigli strategici',
+      'Configurazione e monitoraggio tecnico campagne ADS',
+    ],
+  },
+};
+
+export const SOCIAL_ADDON_TIERS: SocialAddonTier[] = ['basic', 'pro'];
+
+export function isSocialAddonTier(v: string): v is SocialAddonTier {
+  return (SOCIAL_ADDON_TIERS as string[]).includes(v);
+}
+
+export function getSocialAddonPriceId(tier: SocialAddonTier): string | null {
+  return SOCIAL_ADDONS[tier].priceId;
+}
+
+/**
+ * Dato un priceId Stripe, restituisce il tier social se è un addon, altrimenti null.
+ */
+export function resolveSocialAddonPriceId(priceId: string): SocialAddonTier | null {
+  for (const tier of SOCIAL_ADDON_TIERS) {
+    if (SOCIAL_ADDONS[tier].priceId === priceId) return tier;
+  }
+  return null;
+}

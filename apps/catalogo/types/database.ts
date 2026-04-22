@@ -37,6 +37,10 @@ export type AgentStatus = 'active' | 'suspended' | 'terminated';
 
 export type AgentCommissionStatus = 'pending' | 'payable' | 'paid' | 'voided';
 
+export type SocialAddonTier = 'basic' | 'pro';
+
+export type SocialAddonStatus = 'active' | 'pending_cancellation' | 'canceled';
+
 // ---------------------------------------------------------------------------
 // Row types
 // ---------------------------------------------------------------------------
@@ -160,6 +164,22 @@ export interface AgentCommissionRow {
   updated_at: string;
 }
 
+export interface SocialAddonRow {
+  id: string;
+  user_id: string;
+  subscription_id: string;
+  stripe_subscription_id: string;
+  stripe_subscription_item_id: string;
+  stripe_price_id: string;
+  tier: SocialAddonTier;
+  amount_eur: number;
+  status: SocialAddonStatus;
+  added_at: string;
+  canceled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---------------------------------------------------------------------------
 // Insert / Update types
 // ---------------------------------------------------------------------------
@@ -253,6 +273,19 @@ export interface Database {
           consolidated_at: string;
         };
         Update: Partial<AgentCommissionRow>;
+      };
+      social_addons: {
+        Row: SocialAddonRow;
+        Insert: Partial<SocialAddonRow> & {
+          user_id: string;
+          subscription_id: string;
+          stripe_subscription_id: string;
+          stripe_subscription_item_id: string;
+          stripe_price_id: string;
+          tier: SocialAddonTier;
+          amount_eur: number;
+        };
+        Update: Partial<SocialAddonRow>;
       };
     };
     Enums: {

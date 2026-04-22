@@ -22,17 +22,23 @@ import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { resolvePriceId } from '@/lib/plans';
+import {
+  resolvePriceId,
+  resolveSocialAddonPriceId,
+  SOCIAL_ADDONS,
+  PLANS,
+} from '@/lib/plans';
 import { getCommissionEur } from '@/lib/commissions';
 import { processReferralQueue, voidCreditsFromRefund, handleInvoicePaidForReferral } from '@/lib/referral';
-import { getResend, getFromEmail } from '@/lib/email/resend';
+import { getResend, getFromEmail, getNotifyEmail } from '@/lib/email/resend';
 import {
   welcomeEmailHtml,
   referralFirstPaymentEmailHtml,
   referralUnlockedEmailHtml,
   referralAppliedEmailHtml,
+  socialAddonInternalNotificationHtml,
 } from '@/lib/email/templates';
-import type { SubscriptionStatus, BillingInterval, PlanTier } from '@/types/database';
+import type { SubscriptionStatus, BillingInterval, PlanTier, SocialAddonTier } from '@/types/database';
 
 export const runtime = 'nodejs';
 
@@ -81,6 +87,7 @@ export async function POST(request: Request) {
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription;
         await upsertSubscription(admin, sub);
+        await syncSocialAddons(admin, sub, event.type);
         break;
       }
       case 'customer.subscription.deleted': {
@@ -89,6 +96,12 @@ export async function POST(request: Request) {
           .from('subscriptions')
           .update({ status: 'canceled', canceled_at: new Date().toISOString() })
           .eq('stripe_subscription_id', sub.id);
+        // Cascade: tutti gli addon social di questa sub vanno a canceled.
+        await admin
+          .from('social_addons')
+          .update({ status: 'canceled', canceled_at: new Date().toISOString() })
+          .eq('stripe_subscription_id', sub.id)
+          .in('status', ['active', 'pending_cancellation']);
         break;
       }
       case 'invoice.payment_succeeded': {
@@ -99,6 +112,7 @@ export async function POST(request: Request) {
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
         await handleInvoicePaidForReferral(admin, invoice);
+        await handleInvoicePaidForSocialAddonCancellation(admin, invoice);
         break;
       }
       case 'charge.refunded': {
@@ -450,6 +464,283 @@ async function upsertSubscription(
   await admin
     .from('subscriptions')
     .upsert(payload, { onConflict: 'stripe_subscription_id' });
+}
+
+/* ------------------------------------------------------------------ */
+/* SOCIAL ADD-ON                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Sincronizza lo stato social_addons con i line items della Stripe Subscription.
+ *
+ * Chiamata su customer.subscription.created/updated. Se trova un line item
+ * con un price_id che corrisponde a un social addon (basic/pro):
+ *   - se non c'è già un record in DB, lo crea in 'active' + invia email
+ *     interna a info@overfydigital.com
+ *   - se c'è già un record 'active'/'pending_cancellation', aggiorna solo
+ *     il subscription_item_id (in caso di ricreazione)
+ *
+ * Se NON trova più alcun line item social ma in DB c'era un addon attivo,
+ * lo marca 'canceled' (succede dopo la rimozione del line item).
+ */
+async function syncSocialAddons(
+  admin: ReturnType<typeof createAdminClient>,
+  sub: Stripe.Subscription,
+  eventType: string,
+): Promise<void> {
+  const userId = sub.metadata?.supabase_user_id;
+  if (!userId) return;
+
+  // Trova il nostro record subscription in DB (per FK subscription_id)
+  const { data: dbSubRaw } = await admin
+    .from('subscriptions')
+    .select('id')
+    .eq('stripe_subscription_id', sub.id)
+    .maybeSingle();
+
+  const dbSub = dbSubRaw as { id: string } | null;
+  if (!dbSub) return;
+
+  // Scansiona items per trovare il line item social (se presente)
+  let socialItem: Stripe.SubscriptionItem | null = null;
+  let socialTier: SocialAddonTier | null = null;
+  for (const item of sub.items.data) {
+    const tier = resolveSocialAddonPriceId(item.price.id);
+    if (tier) {
+      socialItem = item;
+      socialTier = tier;
+      break; // max 1 addon per sub
+    }
+  }
+
+  // CASO A: c'è un line item social nella sub
+  if (socialItem && socialTier) {
+    // Verifica se abbiamo già un record 'active' o 'pending_cancellation'
+    const { data: existingRaw } = await admin
+      .from('social_addons')
+      .select('id, status, stripe_subscription_item_id, tier')
+      .eq('stripe_subscription_id', sub.id)
+      .in('status', ['active', 'pending_cancellation'])
+      .maybeSingle();
+
+    const existing = existingRaw as {
+      id: string;
+      status: string;
+      stripe_subscription_item_id: string;
+      tier: string;
+    } | null;
+
+    if (!existing) {
+      // Nuovo addon — inserisci + manda email interna (solo su subscription.updated,
+      // non su created per evitare doppi). Evento subscription.created non include
+      // mai un addon visto che la attivazione sposta via subscriptionItems.create
+      // che genera customer.subscription.updated.
+      const { error: insertErr } = await admin.from('social_addons').insert({
+        user_id: userId,
+        subscription_id: dbSub.id,
+        stripe_subscription_id: sub.id,
+        stripe_subscription_item_id: socialItem.id,
+        stripe_price_id: socialItem.price.id,
+        tier: socialTier,
+        amount_eur: SOCIAL_ADDONS[socialTier].amountEur,
+        status: 'active' as const,
+        added_at: new Date().toISOString(),
+      });
+
+      if (insertErr && !insertErr.message.includes('duplicate')) {
+        console.error('[webhook] social_addons insert error:', insertErr);
+      }
+
+      // Email interna — solo se siamo su subscription.updated (prima volta
+      // che vediamo il line item)
+      if (eventType === 'customer.subscription.updated') {
+        await sendSocialAddonNotificationEmail(admin, {
+          action: 'activated',
+          userId,
+          sub,
+          tier: socialTier,
+        });
+      }
+    } else if (existing.stripe_subscription_item_id !== socialItem.id) {
+      // Item ricreato (edge case): aggiorna l'id
+      await admin
+        .from('social_addons')
+        .update({ stripe_subscription_item_id: socialItem.id })
+        .eq('id', existing.id);
+    }
+    return;
+  }
+
+  // CASO B: NESSUN line item social nella sub, ma in DB c'è un addon attivo
+  // → significa che è stato rimosso (cleanup dopo pending_cancellation)
+  const { data: staleAddonRaw } = await admin
+    .from('social_addons')
+    .select('id, tier, status')
+    .eq('stripe_subscription_id', sub.id)
+    .in('status', ['active', 'pending_cancellation'])
+    .maybeSingle();
+
+  const staleAddon = staleAddonRaw as { id: string; tier: SocialAddonTier; status: string } | null;
+
+  if (staleAddon) {
+    await admin
+      .from('social_addons')
+      .update({
+        status: 'canceled',
+        canceled_at: new Date().toISOString(),
+      })
+      .eq('id', staleAddon.id);
+
+    // Email interna di disattivazione (solo se era active, non se era già in
+    // pending_cancellation — lì l'abbiamo già notificata dalla pagina)
+    if (staleAddon.status === 'active') {
+      await sendSocialAddonNotificationEmail(admin, {
+        action: 'canceled',
+        userId,
+        sub,
+        tier: staleAddon.tier,
+      });
+    }
+  }
+}
+
+/**
+ * Al pagamento di una invoice (rinnovo), se la subscription ha il flag
+ * `overfy_social_addon_cancel_at_period_end`, rimuove il subscription item
+ * social e pulisce il flag. Questo è chiamato DOPO che l'invoice corrente
+ * (ancora con l'addon) è stata pagata.
+ */
+async function handleInvoicePaidForSocialAddonCancellation(
+  admin: ReturnType<typeof createAdminClient>,
+  invoice: Stripe.Invoice,
+): Promise<void> {
+  const subscriptionRef = invoice.parent?.subscription_details?.subscription;
+  const subscriptionId =
+    typeof subscriptionRef === 'string'
+      ? subscriptionRef
+      : subscriptionRef?.id ?? null;
+
+  if (!subscriptionId) return;
+
+  let sub: Stripe.Subscription;
+  try {
+    sub = await stripe.subscriptions.retrieve(subscriptionId);
+  } catch (err) {
+    console.error('[webhook] cannot retrieve sub for addon cancel:', err);
+    return;
+  }
+
+  const metadata = (sub.metadata as Record<string, string>) || {};
+  if (metadata.overfy_social_addon_cancel_at_period_end !== 'true') return;
+
+  const itemToRemove = metadata.overfy_social_addon_item_to_remove;
+  if (!itemToRemove) return;
+
+  // Verifica che l'item esista ancora nella sub (altrimenti: già rimosso)
+  const stillThere = sub.items.data.some((i) => i.id === itemToRemove);
+  if (!stillThere) {
+    // Pulisci i flag comunque
+    await stripe.subscriptions.update(subscriptionId, {
+      metadata: {
+        ...metadata,
+        overfy_social_addon_cancel_at_period_end: '',
+        overfy_social_addon_item_to_remove: '',
+      },
+    });
+    return;
+  }
+
+  try {
+    // Rimuovi il subscription item, senza proration (il cliente ha già pagato
+    // il mese che è appena stato fatturato)
+    await stripe.subscriptionItems.del(itemToRemove, {
+      proration_behavior: 'none',
+    });
+
+    // Pulisci i flag di metadata
+    await stripe.subscriptions.update(subscriptionId, {
+      metadata: {
+        ...metadata,
+        overfy_social_addon_cancel_at_period_end: '',
+        overfy_social_addon_item_to_remove: '',
+      },
+    });
+
+    // Il successivo customer.subscription.updated triggerrà syncSocialAddons
+    // che marcherà il DB come canceled (caso B).
+  } catch (err) {
+    console.error('[webhook] subscriptionItems.del error:', err);
+  }
+}
+
+/**
+ * Invia email interna a info@overfydigital.com con dettagli dell'attivazione
+ * o disattivazione dell'addon social. Best-effort.
+ */
+async function sendSocialAddonNotificationEmail(
+  admin: ReturnType<typeof createAdminClient>,
+  params: {
+    action: 'activated' | 'canceled';
+    userId: string;
+    sub: Stripe.Subscription;
+    tier: SocialAddonTier;
+  },
+): Promise<void> {
+  try {
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('email, full_name, phone, company_name')
+      .eq('id', params.userId)
+      .single();
+
+    const p = profile as {
+      email: string;
+      full_name: string | null;
+      phone: string | null;
+      company_name: string | null;
+    } | null;
+
+    if (!p) return;
+
+    // Recupera il piano base dall'item Stripe
+    const baseItem = params.sub.items.data.find(
+      (i) => !resolveSocialAddonPriceId(i.price.id),
+    );
+    const basePriceId = baseItem?.price.id;
+    const baseResolved = basePriceId ? resolvePriceId(basePriceId) : null;
+    const planName = baseResolved
+      ? PLANS[baseResolved.tier].name
+      : 'Overfy';
+    const planTier = baseResolved?.tier ?? 'overfy';
+
+    const cfg = SOCIAL_ADDONS[params.tier];
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://overfydigital.com';
+
+    const resend = getResend();
+    await resend.emails.send({
+      from: getFromEmail(),
+      to: getNotifyEmail(),
+      subject:
+        params.action === 'activated'
+          ? `[Overfy] Nuovo add-on Social ${cfg.name} — ${p.full_name || p.email}`
+          : `[Overfy] Disattivato add-on Social ${cfg.name} — ${p.full_name || p.email}`,
+      html: socialAddonInternalNotificationHtml({
+        action: params.action,
+        tier: params.tier,
+        tierName: cfg.name,
+        amountEur: cfg.amountEur,
+        customerName: p.full_name,
+        customerEmail: p.email,
+        customerPhone: p.phone,
+        customerCompany: p.company_name,
+        planTier,
+        planName,
+        adminUrl: `${siteUrl}/admin`,
+      }),
+    });
+  } catch (err) {
+    console.error('[webhook] social addon notification email error:', err);
+  }
 }
 
 // Export marker usato da referral.ts per evitare circular imports

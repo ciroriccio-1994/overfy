@@ -543,6 +543,116 @@ export function leadNotifyEmailHtml(args: {
 /* ================================================================= */
 /* SHARED HTML PIECES                                                */
 /* ================================================================= */
+/* SOCIAL ADD-ON — notifica interna a info@overfydigital.com          */
+/* ================================================================= */
+
+export function socialAddonInternalNotificationHtml(args: {
+  action: 'activated' | 'canceled';
+  tier: 'basic' | 'pro';
+  tierName: string;
+  amountEur: number;
+  customerName: string | null;
+  customerEmail: string;
+  customerPhone: string | null;
+  customerCompany: string | null;
+  planTier: string;
+  planName: string;
+  adminUrl: string;
+}): string {
+  const isActivation = args.action === 'activated';
+  const accentColor = isActivation ? '#00a173' : '#e94560';
+  const eyebrowLabel = isActivation
+    ? 'NUOVO ADD-ON SOCIAL'
+    : 'ADD-ON SOCIAL DISATTIVATO';
+  const title = isActivation
+    ? `Nuovo ${args.tierName} attivo`
+    : `Disattivazione ${args.tierName}`;
+  const subtitle = isActivation
+    ? 'Un cliente ha appena attivato la gestione social. Inoltra questa email alla collaboratrice per avviare il lavoro.'
+    : 'Un cliente ha disattivato la gestione social. Resta attivo fino a fine periodo.';
+
+  const infoRow = (label: string, value: string) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;background:#ffffff;" bgcolor="#ffffff">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td width="40%" style="padding:0;font-family:'SF Mono','Monaco','Menlo',Consolas,monospace;font-size:11px;color:#a3a3a3;letter-spacing:0.05em;text-transform:uppercase;">
+              ${label}
+            </td>
+            <td style="padding:0;font-family:'Inter','SF Pro Text',-apple-system,sans-serif;font-size:14px;color:#0a0a0a;line-height:1.4;">
+              ${value}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>${escape(title)}</title>
+</head>
+<body style="margin:0;padding:0;background:#fafafa;font-family:'Inter','SF Pro Text',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0a0a0a;-webkit-font-smoothing:antialiased;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" bgcolor="#fafafa" style="background:#fafafa;padding:56px 20px;">
+  <tr><td align="center">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="560" style="max-width:560px;background:#ffffff;border:1px solid #e5e5e5;border-radius:12px;" bgcolor="#ffffff">
+
+      <tr><td style="padding:36px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        ${logoHtml()}
+      </td></tr>
+
+      <tr><td style="padding:28px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        ${dividerHtml()}
+      </td></tr>
+
+      <tr><td style="padding:32px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <p style="font-family:'SF Mono','Monaco','Menlo',Consolas,monospace;font-size:11px;color:${accentColor};margin:0;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+          ${eyebrowLabel}
+        </p>
+      </td></tr>
+
+      <tr><td style="padding:10px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <h1 style="font-family:'Inter','SF Pro Text',-apple-system,sans-serif;font-size:26px;line-height:1.2;font-weight:600;color:#0a0a0a;margin:0;letter-spacing:-0.02em;">
+          ${escape(title)}
+        </h1>
+      </td></tr>
+
+      <tr><td style="padding:14px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <p style="font-size:14px;line-height:1.6;color:#525252;margin:0;">
+          ${subtitle}
+        </p>
+      </td></tr>
+
+      <tr><td style="padding:32px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          ${infoRow('Cliente', escape(args.customerName || args.customerEmail))}
+          ${infoRow('Email', `<a href="mailto:${escape(args.customerEmail)}" style="color:#0a0a0a;text-decoration:underline;">${escape(args.customerEmail)}</a>`)}
+          ${args.customerPhone ? infoRow('Telefono', escape(args.customerPhone)) : ''}
+          ${args.customerCompany ? infoRow('Azienda', escape(args.customerCompany)) : ''}
+          ${infoRow('Piano base', `${escape(args.planName)} <span style="color:#a3a3a3;font-size:12px;">(${escape(args.planTier)})</span>`)}
+          ${infoRow('Add-on', `<strong>${escape(args.tierName)}</strong> — €${args.amountEur.toFixed(2).replace('.', ',')}/mese`)}
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:28px 40px 0 40px;background:#ffffff;" bgcolor="#ffffff">
+        <a href="${args.adminUrl}" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:11px 20px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:-0.01em;line-height:1.3;">
+          Apri area admin →
+        </a>
+      </td></tr>
+
+      ${footerHtml()}
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
+/* ================================================================= */
 
 function logoHtml(): string {
   return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">

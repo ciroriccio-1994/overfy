@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import type { SubscriptionRow } from '@/types/database';
+import type { SubscriptionRow, SocialAddonRow } from '@/types/database';
 import type { ProfileRowWithAdmin } from '@/lib/auth-helpers';
 import type { InvoiceLite, PlanInfo } from './page';
 
@@ -13,9 +13,10 @@ interface Props {
   planInfo: PlanInfo | null;
   invoices: InvoiceLite[];
   authEmail: string;
+  socialAddon: SocialAddonRow | null;
 }
 
-export function DashboardClient({ profile, subscription, planInfo, invoices, authEmail }: Props) {
+export function DashboardClient({ profile, subscription, planInfo, invoices, authEmail, socialAddon }: Props) {
   const router = useRouter();
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
@@ -86,6 +87,13 @@ export function DashboardClient({ profile, subscription, planInfo, invoices, aut
           <NoPlanBlock />
         )}
       </SectionCard>
+
+      {/* SEZIONE 1-bis — SERVIZI EXTRA (solo se ha sub attiva) */}
+      {subscription && ['active', 'trialing'].includes(subscription.status) && (
+        <SectionCard label="Servizi extra">
+          <SocialAddonBlock addon={socialAddon} />
+        </SectionCard>
+      )}
 
       {/* SEZIONE 2 — ULTIME FATTURE */}
       <SectionCard label="Ultime fatture">
@@ -232,6 +240,74 @@ function NoPlanBlock() {
         className="inline-block bg-[var(--color-ink)] text-[var(--color-paper)] px-6 py-3 rounded-full text-xs font-medium hover:bg-[var(--color-mint-ink)] transition"
       >
         Scegli un piano →
+      </Link>
+    </div>
+  );
+}
+
+function SocialAddonBlock({ addon }: { addon: SocialAddonRow | null }) {
+  if (!addon) {
+    return (
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h3 className="font-display text-2xl leading-tight text-[var(--color-ink)]">
+              Gestione social
+            </h3>
+            <span
+              className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--color-bg)', color: 'var(--color-muted)' }}
+            >
+              Non attivo
+            </span>
+          </div>
+          <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed max-w-lg">
+            Aggiungi la gestione professionale dei tuoi canali social al tuo abbonamento. Da €100/mese — basic o pro.
+          </p>
+        </div>
+        <Link
+          href="/aggiungi-social"
+          className="bg-[var(--color-ink)] text-[var(--color-paper)] px-6 py-3 rounded-full text-xs font-medium hover:bg-[var(--color-mint-ink)] transition self-start md:self-auto whitespace-nowrap"
+        >
+          Scopri di più →
+        </Link>
+      </div>
+    );
+  }
+
+  const tierName = addon.tier === 'pro' ? 'Social Pro' : 'Social Basic';
+  const isPendingCancel = addon.status === 'pending_cancellation';
+
+  return (
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div className="flex items-center gap-3 mb-1">
+          <h3 className="font-display text-2xl leading-tight text-[var(--color-ink)]">
+            {tierName}
+          </h3>
+          <span
+            className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full"
+            style={{
+              background: isPendingCancel
+                ? 'var(--color-coral-soft)'
+                : 'var(--color-mint-soft)',
+              color: isPendingCancel
+                ? 'var(--color-coral-ink)'
+                : 'var(--color-mint-ink)',
+            }}
+          >
+            {isPendingCancel ? 'In disattivazione' : 'Attivo'}
+          </span>
+        </div>
+        <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
+          €{addon.amount_eur.toFixed(2).replace('.', ',')} / mese · fatturato insieme al tuo abbonamento
+        </p>
+      </div>
+      <Link
+        href="/aggiungi-social"
+        className="px-5 py-2.5 rounded-full text-xs font-medium border border-[var(--color-line)] text-[var(--color-ink)] hover:bg-[var(--color-bg)] transition self-start md:self-auto whitespace-nowrap"
+      >
+        Gestisci →
       </Link>
     </div>
   );
