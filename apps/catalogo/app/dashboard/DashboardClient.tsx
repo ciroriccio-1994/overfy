@@ -72,45 +72,51 @@ export function DashboardClient({ profile, subscription, planInfo, invoices, aut
         )}
       </div>
 
-      {/* SEZIONE 1 — IL TUO PIANO */}
-      <SectionCard label="Il tuo piano">
-        {subscription && planInfo ? (
-          <PlanBlock
-            sub={subscription}
-            plan={planInfo}
-            onPortal={openPortal}
-            portalLoading={portalLoading}
-            portalError={portalError}
-          />
-        ) : (
-          <NoPlanBlock />
-        )}
-      </SectionCard>
+      {/* SEZIONE 1 — IL TUO PIANO (nascosta per admin) */}
+      {!profile.is_admin && (
+        <SectionCard label="Il tuo piano">
+          {subscription && planInfo ? (
+            <PlanBlock
+              sub={subscription}
+              plan={planInfo}
+              onPortal={openPortal}
+              portalLoading={portalLoading}
+              portalError={portalError}
+            />
+          ) : (
+            <NoPlanBlock />
+          )}
+        </SectionCard>
+      )}
 
-      {/* SEZIONE 2 — ULTIME FATTURE */}
-      <SectionCard label="Ultime fatture">
-        {invoices.length === 0 ? (
-          <p className="text-sm text-[var(--color-ink-soft)]">
-            Nessuna fattura ancora. Le fatture appariranno qui dopo il primo pagamento.
-          </p>
-        ) : (
-          <ul className="divide-y divide-[var(--color-line)]">
-            {invoices.map((inv) => (
-              <InvoiceRow key={inv.id} inv={inv} />
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+      {/* SEZIONE 2 — ULTIME FATTURE (nascosta per admin) */}
+      {!profile.is_admin && (
+        <SectionCard label="Ultime fatture">
+          {invoices.length === 0 ? (
+            <p className="text-sm text-[var(--color-ink-soft)]">
+              Nessuna fattura ancora. Le fatture appariranno qui dopo il primo pagamento.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[var(--color-line)]">
+              {invoices.map((inv) => (
+                <InvoiceRow key={inv.id} inv={inv} />
+              ))}
+            </ul>
+          )}
+        </SectionCard>
+      )}
 
       {/* SEZIONE 3 — PROFILO */}
       <SectionCard label="Profilo">
         <ProfileForm profile={profile} />
       </SectionCard>
 
-      {/* SEZIONE 4 — INVITA UN AMICO (patch 2026-04-21) */}
-      <SectionCard label="Invita un amico">
-        <ReferralBlock hasSub={!!subscription && subscription.status === 'active'} />
-      </SectionCard>
+      {/* SEZIONE 4 — INVITA UN AMICO (nascosta per admin) */}
+      {!profile.is_admin && (
+        <SectionCard label="Invita un amico">
+          <ReferralBlock hasSub={!!subscription && subscription.status === 'active'} />
+        </SectionCard>
+      )}
 
       {/* SEZIONE 5 — SUPPORTO + LOGOUT */}
       <SectionCard label="Supporto">
