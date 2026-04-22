@@ -58,23 +58,13 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center group" aria-label="Overfy">
-          {/* Mobile: logo tondo (brand icon) */}
-          <Image
-            src="/overfy-icon-512.png"
-            alt="Overfy"
-            width={64}
-            height={64}
-            priority
-            className="h-10 w-10 md:hidden"
-          />
-          {/* Desktop: logo orizzontale completo con wordmark */}
           <Image
             src="/logo-overfy-brand.png"
             alt="Overfy"
             width={200}
             height={62}
             priority
-            className="hidden md:block h-10 w-auto"
+            className="h-9 w-auto md:h-10"
           />
         </Link>
 
