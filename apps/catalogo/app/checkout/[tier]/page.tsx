@@ -76,12 +76,15 @@ export default async function CheckoutTierPage({
   }
 
   const planConfig = PLANS[tier as PaidPlanTier];
-  const planPriceEur =
+  // planConfig.monthly/quarterly/yearly sono typed come PriceSlot | null
+  // ma per i PaidPlanTier ('essenziale' | 'professionale' | 'business') sono sempre valorizzati.
+  const slot =
     interval === 'month'
-      ? planConfig.monthly.amountEur
+      ? planConfig.monthly
       : interval === 'quarter'
-        ? planConfig.quarterly.amountEur
-        : planConfig.yearly.amountEur;
+        ? planConfig.quarterly
+        : planConfig.yearly;
+  const planPriceEur = slot?.amountEur ?? 0;
 
   return (
     <>
