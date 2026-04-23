@@ -57,32 +57,36 @@ export function Hero() {
 
           {/* SOTTOTITOLO — asciutto, concreto */}
           <p className="text-lg md:text-2xl text-[var(--color-ink-soft)] max-w-3xl mx-auto leading-relaxed mb-14">
-            Siti, e-commerce, prenotazioni, chatbot AI. Un abbonamento che
-            include tutto: aggiornamenti, modifiche, problemi.
+            Siti, e-commerce, chatbot AI, automazioni. Canone mensile, installazione gratuita, disdici quando vuoi.
             <br className="hidden md:block" />
             <span className="font-display-italic text-[var(--color-ink)]">
-              {" "}Tu fai il tuo lavoro.
+              {" "}Zero contratti capestro.
             </span>
           </p>
 
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-20">
+          {/* CTA — primary "Prenota call" (azione concreta), secondary "Vedi esempi" */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
             <Link
-              href="#demo"
-              className="group bg-[var(--color-ink)] text-[var(--color-paper)] px-8 py-4 rounded-full text-sm font-medium hover:bg-[var(--color-mint-ink)] transition flex items-center justify-center gap-2"
+              href="/contatti"
+              className="group bg-[var(--color-ink)] text-[var(--color-paper)] px-8 py-4 rounded-full text-sm font-medium hover:bg-[var(--color-mint-ink)] transition flex items-center justify-center gap-2 shadow-lg"
             >
-              Vedi gli esempi
+              Prenota una call gratuita
               <span className="group-hover:translate-x-1 transition-transform">
                 →
               </span>
             </Link>
             <Link
-              href="/contatti"
+              href="#demo"
               className="bg-[var(--color-paper)] border border-[var(--color-line)] text-[var(--color-ink)] px-8 py-4 rounded-full text-sm font-medium hover:border-[var(--color-ink)] transition text-center"
             >
-              Parla con noi →
+              Vedi gli esempi
             </Link>
           </div>
+
+          {/* Micro-trust sotto CTA */}
+          <p className="text-xs font-mono text-[var(--color-muted)] mb-20">
+            30 minuti · nessun impegno · via Google Meet o in persona (Napoli)
+          </p>
 
           {/* PILASTRI — 3 voci in riga, minimal, niente maxi-card */}
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-sm font-mono">

@@ -143,7 +143,7 @@ function cycleToInterval(cycle: BillingCycle): "month" | "quarter" | "year" {
 }
 
 export function Pricing() {
-  const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const [cycle, setCycle] = useState<BillingCycle>("annual");
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -380,13 +380,21 @@ export function Pricing() {
                   <button
                     onClick={() => handlePaidCta(plan.id)}
                     disabled={isLoading}
-                    className="block text-center py-3 rounded-full text-sm font-medium transition disabled:opacity-60"
+                    className={`block text-center rounded-full text-sm font-medium transition disabled:opacity-60 ${
+                      plan.highlight
+                        ? "py-4 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+                        : "py-3"
+                    }`}
                     style={{
                       background: plan.highlight ? "var(--color-ink)" : c.accent,
                       color: "white",
                     }}
                   >
-                    {isLoading ? "Preparo pagamento…" : `${plan.cta} →`}
+                    {isLoading
+                      ? "Preparo pagamento…"
+                      : plan.highlight
+                        ? `${plan.cta} — Il più scelto →`
+                        : `${plan.cta} →`}
                   </button>
                 )}
               </div>

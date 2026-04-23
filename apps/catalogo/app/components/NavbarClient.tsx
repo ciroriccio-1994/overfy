@@ -166,9 +166,9 @@ export function NavbarClient({ isAuthenticated, isAdmin, userEmail, userName }: 
               </Link>
               <Link
                 href="/contatti"
-                className="bg-[var(--color-ink)] text-[var(--color-paper)] px-5 py-2.5 rounded-full text-xs font-medium hover:bg-[var(--color-mint-ink)] transition"
+                className="bg-[var(--color-ink)] text-[var(--color-paper)] px-5 py-2.5 rounded-full text-xs font-medium hover:bg-[var(--color-mint-ink)] transition shadow-sm"
               >
-                Parla con noi →
+                Prenota una call →
               </Link>
             </>
           )}
