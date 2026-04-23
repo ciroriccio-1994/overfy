@@ -58,10 +58,6 @@ export function Hero() {
           {/* SOTTOTITOLO — asciutto, concreto */}
           <p className="text-lg md:text-2xl text-[var(--color-ink-soft)] max-w-3xl mx-auto leading-relaxed mb-14">
             Siti, e-commerce, chatbot AI, automazioni. Canone mensile, installazione gratuita, disdici quando vuoi.
-            <br className="hidden md:block" />
-            <span className="font-display-italic text-[var(--color-ink)]">
-              {" "}Zero contratti capestro.
-            </span>
           </p>
 
           {/* CTA — primary "Prenota call" (azione concreta), secondary "Vedi esempi" */}
