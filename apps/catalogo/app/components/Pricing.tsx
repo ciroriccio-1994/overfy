@@ -162,32 +162,15 @@ export function Pricing() {
     const interval = cycleToInterval(cycle);
 
     if (!authed) {
+      // Flow per non loggato: mantiene il path esistente (registrazione → dopo-registrazione).
+      // Se l'utente vuole un add-on social, può aggiungerlo dopo la registrazione dalla dashboard.
       window.location.href = `/registrati?plan=${planId}&interval=${interval}`;
       return;
     }
 
+    // Utente loggato → step intermedio con scelta add-on social
     setLoadingPlan(planId);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: planId, interval }),
-      });
-      const data = await res.json();
-      if (data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-      if (data?.redirectTo) {
-        window.location.href = `${data.redirectTo}?plan=${planId}&interval=${interval}`;
-        return;
-      }
-      setError(data?.error || "Impossibile avviare il pagamento.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Errore di rete.");
-    } finally {
-      setLoadingPlan(null);
-    }
+    window.location.href = `/checkout/${planId}?interval=${interval}`;
   }
 
   return (

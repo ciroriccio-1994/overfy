@@ -2,12 +2,23 @@
 //
 // Crea una Stripe Checkout Session per l'utente autenticato.
 // Supporta intervalli: month, quarter, year.
+//
+// NUOVO (Apr 23 2026): accetta parametro opzionale social_tier = 'basic' | 'pro'
+// che aggiunge un secondo line item (add-on Social) alla stessa subscription.
+// In questo modo il cliente paga base + social in un'unica invoice.
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { stripe } from '@/lib/stripe';
-import { getPriceId, isPaidPlan, PAID_PLANS, type PaidPlanTier } from '@/lib/plans';
+import {
+  getPriceId,
+  isPaidPlan,
+  PAID_PLANS,
+  type PaidPlanTier,
+  isSocialAddonTier,
+  getSocialAddonPriceId,
+} from '@/lib/plans';
 import type { BillingInterval } from '@/types/database';
 
 export const runtime = 'nodejs';
@@ -19,6 +30,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const tier = body?.tier as string | undefined;
     const interval = body?.interval as string | undefined;
+    const socialTierRaw = body?.social_tier as string | null | undefined;
 
     if (!tier || !isPaidPlan(tier)) {
       return NextResponse.json(
@@ -31,6 +43,26 @@ export async function POST(request: Request) {
         { error: 'Intervallo non valido. Deve essere "month", "quarter" o "year".' },
         { status: 400 },
       );
+    }
+
+    // Validazione social_tier (opzionale)
+    let socialPriceId: string | null = null;
+    let socialTier: 'basic' | 'pro' | null = null;
+    if (socialTierRaw && typeof socialTierRaw === 'string') {
+      if (!isSocialAddonTier(socialTierRaw)) {
+        return NextResponse.json(
+          { error: 'Social tier non valido. Usa "basic" o "pro".' },
+          { status: 400 },
+        );
+      }
+      socialTier = socialTierRaw;
+      socialPriceId = getSocialAddonPriceId(socialTier);
+      if (!socialPriceId) {
+        return NextResponse.json(
+          { error: 'Price ID non configurato per il social add-on.' },
+          { status: 500 },
+        );
+      }
     }
 
     const priceId = getPriceId(tier as PaidPlanTier, interval as BillingInterval);
@@ -81,10 +113,33 @@ export async function POST(request: Request) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://overfydigital.com';
 
+    // Costruisci line items: base + eventuale social
+    const lineItems: Array<{ price: string; quantity: number }> = [
+      { price: priceId, quantity: 1 },
+    ];
+    if (socialPriceId) {
+      lineItems.push({ price: socialPriceId, quantity: 1 });
+    }
+
+    const subscriptionMetadata: Record<string, string> = {
+      supabase_user_id: user.id,
+      plan_tier: tier,
+      billing_interval: interval,
+    };
+    const sessionMetadata: Record<string, string> = {
+      supabase_user_id: user.id,
+      plan_tier: tier,
+      billing_interval: interval,
+    };
+    if (socialTier) {
+      subscriptionMetadata.overfy_social_addon_tier = socialTier;
+      sessionMetadata.social_addon_tier = socialTier;
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: lineItems,
       success_url: `${siteUrl}/dopo-pagamento?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/#pacchetti`,
       allow_promotion_codes: true,
@@ -94,9 +149,6 @@ export async function POST(request: Request) {
         name: 'auto',
         address: 'auto',
       },
-      // Consent al checkout: ai sensi dell'art. 59 lett. o) Cod. Cons., Stripe
-      // mostra un testo di conferma che sarà richiesto prima del pagamento.
-      // Protegge da richieste di rimborso post-erogazione.
       consent_collection: {
         terms_of_service: 'required',
       },
@@ -107,17 +159,9 @@ export async function POST(request: Request) {
         },
       },
       subscription_data: {
-        metadata: {
-          supabase_user_id: user.id,
-          plan_tier: tier,
-          billing_interval: interval,
-        },
+        metadata: subscriptionMetadata,
       },
-      metadata: {
-        supabase_user_id: user.id,
-        plan_tier: tier,
-        billing_interval: interval,
-      },
+      metadata: sessionMetadata,
     });
 
     return NextResponse.json({ url: session.url });
