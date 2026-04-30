@@ -7,6 +7,15 @@ import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { useBooking } from "../components/BookingContext";
 import { services, staff } from "@/lib/services";
+import {
+  Check,
+  MapPin,
+  Clock,
+  Phone,
+  ArrowLeft,
+  Ornament,
+  MonogramSG,
+} from "../components/Icon";
 
 export default function ConfirmationPage() {
   const { booking, reset } = useBooking();
@@ -32,7 +41,6 @@ export default function ConfirmationPage() {
     year: "numeric",
   });
 
-  // Genera un codice prenotazione finto
   const bookingCode =
     "SG-" +
     new Date().getFullYear() +
@@ -43,51 +51,58 @@ export default function ConfirmationPage() {
     <main>
       <Navbar />
 
-      <section className="pt-32 pb-20 px-6 min-h-[80vh]">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <div className="w-20 h-20 bg-[var(--color-success)] rounded-full flex items-center justify-center text-4xl text-white mx-auto mb-6">
-              ✓
+      <section className="pt-32 pb-20 px-6 lg:px-10 min-h-[80vh]">
+        <div className="max-w-3xl mx-auto">
+          {/* Success header */}
+          <div className="text-center mb-14">
+            <div className="relative w-20 h-20 mx-auto mb-8">
+              <div className="absolute inset-0 border border-[var(--color-success)]/30 rounded-full" />
+              <div className="absolute inset-2 border border-[var(--color-success)]/50 rounded-full" />
+              <div className="absolute inset-4 bg-[var(--color-success)] rounded-full flex items-center justify-center text-white">
+                <Check size={20} />
+              </div>
             </div>
-            <div className="text-xs uppercase tracking-[0.25em] text-[var(--color-gold)] mb-4">
-              Prenotazione confermata
+            <div className="eyebrow eyebrow-line justify-center mb-5 inline-flex">
+              <span>Prenotazione confermata</span>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl text-[var(--color-ink)] mb-4 leading-tight">
-              A presto, <em className="text-[var(--color-gold-dark)]">
-                {booking.customer.name || "ospite"}
-              </em>.
-            </h1>
-            <p className="text-[var(--color-muted)] leading-relaxed">
-              Ti aspettiamo al Salone Gloria per il tuo appuntamento.
+            <h1 className="font-display-light text-4xl md:text-6xl text-[var(--color-ink)] leading-[1.05] mb-5">
+              A presto,
               <br />
-              Riceverai conferma via email e SMS.
+              <span className="italic font-medium text-[var(--color-gold-dark)]">
+                {booking.customer.name || "ospite"}.
+              </span>
+            </h1>
+            <p className="text-[var(--color-ink-soft)] leading-relaxed max-w-md mx-auto">
+              Ti aspettiamo al Salone Gloria per il tuo appuntamento. Riceverai
+              conferma via email e SMS.
             </p>
+            <Ornament className="text-[var(--color-gold)] mx-auto mt-8" />
           </div>
 
-          {/* Card riepilogo */}
-          <div className="bg-[var(--color-white)] rounded-3xl p-8 border border-[var(--color-border)] mb-6">
-            <div className="flex items-center justify-between pb-6 border-b border-[var(--color-border)] mb-6">
+          {/* Riepilogo "ticket" */}
+          <div className="bg-[var(--color-white)] border border-[var(--color-border)] mb-6">
+            {/* Header del ticket */}
+            <div className="flex items-center justify-between p-8 border-b border-[var(--color-border)] bg-[var(--color-bg-warm)]/40">
               <div>
-                <div className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-1">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--color-muted)] mb-1">
                   Codice prenotazione
                 </div>
-                <div className="font-display text-xl text-[var(--color-ink)]">
+                <div className="font-display-light text-2xl text-[var(--color-ink)] tracking-wider">
                   {bookingCode}
                 </div>
               </div>
-              <div className="w-12 h-12 bg-[var(--color-sand)] rounded-xl flex items-center justify-center text-2xl">
-                📅
-              </div>
+              <MonogramSG size={56} className="text-[var(--color-gold-dark)]" />
             </div>
 
-            <div className="space-y-5">
-              <Row label="Servizio" value={`${service.emoji} ${service.name}`} sub={`${service.duration} minuti · €${service.price}`} />
+            {/* Body del ticket */}
+            <div className="p-8 grid sm:grid-cols-2 gap-8">
+              <Row label="Servizio" value={service.name} sub={`${service.duration} minuti · €${service.price}`} />
               <Row
                 label="Operatore"
                 value={
                   staffMember?.id === "any" || !staffMember
                     ? "Da assegnare"
-                    : `${staffMember.emoji} ${staffMember.name}`
+                    : staffMember.name
                 }
                 sub={staffMember?.role}
               />
@@ -96,51 +111,57 @@ export default function ConfirmationPage() {
                 value={formattedDate}
                 sub={booking.time}
                 highlight
+                capitalize
               />
-              <Row label="Cliente" value={booking.customer.name} sub={booking.customer.email} />
+              <Row
+                label="Cliente"
+                value={booking.customer.name}
+                sub={booking.customer.email}
+              />
             </div>
           </div>
 
-          {/* Info importanti */}
-          <div className="bg-[var(--color-sand)]/40 rounded-3xl p-6 mb-6 border border-[var(--color-border)]">
-            <div className="text-xs uppercase tracking-wider text-[var(--color-gold)] mb-3">
+          {/* Cose utili da sapere */}
+          <div className="bg-[var(--color-bg-warm)]/50 border border-[var(--color-border)] p-8 mb-8">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--color-gold)] mb-5">
               Cose utili da sapere
             </div>
-            <ul className="space-y-3 text-sm">
-              <li className="flex gap-3">
-                <span className="text-[var(--color-gold-dark)]">📍</span>
-                <div>
-                  <div className="font-medium text-[var(--color-ink)]">
-                    Via dei Mille 38, 80121 Napoli
-                  </div>
+            <ul className="space-y-4 text-sm">
+              <Bullet icon={<MapPin size={16} />}>
+                <span className="font-medium text-[var(--color-ink)]">
+                  Via dei Mille 38, 80121 Napoli
+                </span>
+                <a
+                  href="https://maps.google.com/?q=Via+dei+Mille+38+Napoli"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-xs text-[var(--color-gold-dark)] underline underline-offset-2 mt-1 hover:text-[var(--color-ink)] transition"
+                >
+                  Apri in Google Maps →
+                </a>
+              </Bullet>
+              <Bullet icon={<Clock size={16} />}>
+                <span className="text-[var(--color-ink-soft)]">
+                  Ti consigliamo di arrivare 5 minuti prima
+                  dell&apos;appuntamento.
+                </span>
+              </Bullet>
+              <Bullet icon={<Phone size={16} />}>
+                <span className="text-[var(--color-ink-soft)]">
+                  Per modifiche o disdette:{" "}
                   <a
-                    href="https://maps.google.com/?q=Via+dei+Mille+38+Napoli"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-[var(--color-gold)] underline"
+                    href="tel:+390811122334"
+                    className="text-[var(--color-ink)] underline underline-offset-2"
                   >
-                    Apri in Google Maps →
+                    081 112 2334
                   </a>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-[var(--color-gold-dark)]">⏰</span>
-                <div className="text-[var(--color-ink)]">
-                  Ti consigliamo di arrivare 5 minuti prima dell&apos;appuntamento
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-[var(--color-gold-dark)]">📞</span>
-                <div className="text-[var(--color-ink)]">
-                  Per modifiche o disdette: <a href="tel:+390811122334" className="underline">081 112 2334</a>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-[var(--color-gold-dark)]">↩</span>
-                <div className="text-[var(--color-ink)]">
-                  Disdetta gratuita fino a 24h prima
-                </div>
-              </li>
+                </span>
+              </Bullet>
+              <Bullet icon={<ArrowLeft size={16} />}>
+                <span className="text-[var(--color-ink-soft)]">
+                  Disdetta gratuita fino a 24h prima.
+                </span>
+              </Bullet>
             </ul>
           </div>
 
@@ -148,13 +169,13 @@ export default function ConfirmationPage() {
             <Link
               href="/"
               onClick={() => reset()}
-              className="bg-[var(--color-ink)] text-[var(--color-bg)] px-7 py-4 rounded-full font-medium hover:bg-[var(--color-gold-dark)] transition text-center"
+              className="bg-[var(--color-ink)] text-[var(--color-bg)] px-8 py-4 text-sm tracking-wide hover:bg-[var(--color-gold-dark)] transition text-center"
             >
               Torna alla home
             </Link>
             <button
               onClick={() => window.print()}
-              className="border border-[var(--color-border)] px-7 py-4 rounded-full font-medium hover:bg-[var(--color-white)] transition"
+              className="border border-[var(--color-ink)]/20 px-8 py-4 text-sm tracking-wide hover:border-[var(--color-ink)] hover:bg-[var(--color-bg-warm)] transition"
             >
               Stampa / Salva
             </button>
@@ -172,35 +193,54 @@ function Row({
   value,
   sub,
   highlight,
+  capitalize,
 }: {
   label: string;
   value: string;
   sub?: string;
   highlight?: boolean;
+  capitalize?: boolean;
 }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] mb-1">
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--color-muted)] mb-1.5">
         {label}
       </div>
       <div
-        className={`font-semibold text-[var(--color-ink)] ${
-          highlight ? "capitalize" : ""
+        className={`font-display text-xl text-[var(--color-ink)] leading-tight ${
+          capitalize ? "capitalize" : ""
         }`}
       >
         {value}
       </div>
       {sub && (
         <div
-          className={`text-xs mt-0.5 ${
+          className={`mt-0.5 ${
             highlight
-              ? "font-display text-2xl text-[var(--color-gold-dark)] mt-1"
-              : "text-[var(--color-muted)]"
+              ? "font-display-light text-3xl text-[var(--color-gold-dark)] mt-1"
+              : "text-xs text-[var(--color-muted)]"
           }`}
         >
           {sub}
         </div>
       )}
     </div>
+  );
+}
+
+function Bullet({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="flex gap-3 items-start">
+      <span className="text-[var(--color-gold-dark)] mt-0.5 flex-shrink-0">
+        {icon}
+      </span>
+      <div className="leading-relaxed">{children}</div>
+    </li>
   );
 }

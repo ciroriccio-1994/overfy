@@ -3,9 +3,43 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBooking } from "../components/BookingContext";
-import { services, staff, categoryLabels, categoryEmojis } from "@/lib/services";
+import {
+  services,
+  staff,
+  categoryLabels,
+  categoryIconKeys,
+  ServiceCategory,
+} from "@/lib/services";
+import { Avatar } from "../components/Avatar";
+import {
+  Scissors,
+  Sparkle,
+  Diamond,
+  Leaf,
+  Clock,
+  Check,
+  ArrowLeft,
+  ArrowRight,
+} from "../components/Icon";
 
 type Step = "service" | "staff" | "datetime" | "customer";
+
+const iconMap: Record<
+  string,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
+  scissors: Scissors,
+  sparkle: Sparkle,
+  diamond: Diamond,
+  leaf: Leaf,
+};
+
+const categoriesOrder: ServiceCategory[] = [
+  "parrucchiere",
+  "estetica",
+  "manicure",
+  "trattamenti",
+];
 
 export function BookingFlow() {
   const router = useRouter();
@@ -25,31 +59,35 @@ export function BookingFlow() {
   };
 
   return (
-    <section className="pt-32 pb-20 px-6 min-h-screen">
-      <div className="max-w-4xl mx-auto">
+    <section className="pt-32 pb-20 px-6 lg:px-10 min-h-screen">
+      <div className="max-w-5xl mx-auto">
         {/* Progress bar */}
-        <div className="flex items-center gap-2 mb-10">
+        <div className="flex items-center gap-2 mb-12">
           <StepDot
             active={step === "service"}
             done={booking.serviceSlug !== null && step !== "service"}
             num={1}
             label="Servizio"
           />
-          <div className="flex-1 h-px bg-[var(--color-border)]"></div>
+          <Divider />
           <StepDot
             active={step === "staff"}
-            done={booking.staffId !== null && step !== "staff" && step !== "service"}
+            done={
+              booking.staffId !== null &&
+              step !== "staff" &&
+              step !== "service"
+            }
             num={2}
             label="Operatore"
           />
-          <div className="flex-1 h-px bg-[var(--color-border)]"></div>
+          <Divider />
           <StepDot
             active={step === "datetime"}
             done={booking.date !== null && step === "customer"}
             num={3}
             label="Data e ora"
           />
-          <div className="flex-1 h-px bg-[var(--color-border)]"></div>
+          <Divider />
           <StepDot
             active={step === "customer"}
             done={false}
@@ -92,20 +130,28 @@ export function BookingFlow() {
           />
         )}
 
-        {step === "customer" && service && staffMember && booking.date && booking.time && (
-          <CustomerStep
-            service={service}
-            staffMember={staffMember}
-            date={booking.date}
-            time={booking.time}
-            onBack={() => setStep("datetime")}
-            onSubmit={handleSubmit}
-            submitting={submitting}
-          />
-        )}
+        {step === "customer" &&
+          service &&
+          staffMember &&
+          booking.date &&
+          booking.time && (
+            <CustomerStep
+              service={service}
+              staffMember={staffMember}
+              date={booking.date}
+              time={booking.time}
+              onBack={() => setStep("datetime")}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+            />
+          )}
       </div>
     </section>
   );
+}
+
+function Divider() {
+  return <div className="flex-1 h-px bg-[var(--color-border)]" />;
 }
 
 function StepDot({
@@ -120,22 +166,24 @@ function StepDot({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2.5">
       <div
-        className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition ${
+        className={`w-9 h-9 flex items-center justify-center text-sm font-medium transition border ${
           done
-            ? "bg-[var(--color-success)] text-white"
+            ? "bg-[var(--color-gold)] border-[var(--color-gold)] text-[var(--color-ink)]"
             : active
-            ? "bg-[var(--color-ink)] text-[var(--color-bg)]"
-            : "bg-[var(--color-border)] text-[var(--color-muted)]"
+            ? "bg-[var(--color-ink)] border-[var(--color-ink)] text-[var(--color-bg)]"
+            : "bg-transparent border-[var(--color-border)] text-[var(--color-muted)]"
         }`}
       >
-        {done ? "✓" : num}
+        {done ? <Check size={16} /> : num}
       </div>
       <span
-        className={`hidden md:inline text-sm ${
+        className={`hidden md:inline text-[11px] uppercase tracking-[0.22em] ${
           active
-            ? "text-[var(--color-ink)] font-medium"
+            ? "text-[var(--color-ink)]"
+            : done
+            ? "text-[var(--color-gold-dark)]"
             : "text-[var(--color-muted)]"
         }`}
       >
@@ -153,59 +201,61 @@ function ServiceStep({
   onSelect: (slug: string) => void;
   selected: string | null;
 }) {
-  const categories = ["parrucchiere", "estetica", "manicure", "trattamenti"] as const;
-
   return (
     <div>
-      <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.25em] text-[var(--color-gold)] mb-3">
-          Passo 1 di 4
+      <div className="mb-12">
+        <div className="eyebrow eyebrow-line mb-4">
+          <span>Passo 1 di 4</span>
         </div>
-        <h2 className="font-display text-4xl text-[var(--color-ink)]">
-          Quale servizio ti serve?
+        <h2 className="font-display-light text-4xl md:text-5xl text-[var(--color-ink)] leading-tight">
+          Quale servizio
+          <br />
+          <span className="italic font-medium text-[var(--color-gold-dark)]">
+            ti serve?
+          </span>
         </h2>
       </div>
 
-      {categories.map((cat) => {
+      {categoriesOrder.map((cat) => {
         const catServices = services.filter((s) => s.category === cat);
+        const Icon = iconMap[categoryIconKeys[cat]];
         return (
-          <div key={cat} className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">{categoryEmojis[cat]}</span>
+          <div key={cat} className="mb-12">
+            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[var(--color-border)]">
+              <Icon size={20} className="text-[var(--color-gold-dark)]" />
               <h3 className="font-display text-2xl text-[var(--color-ink)]">
                 {categoryLabels[cat]}
               </h3>
+              <span className="text-[10px] uppercase tracking-[0.22em] text-[var(--color-muted)] ml-auto">
+                {catServices.length} servizi
+              </span>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
               {catServices.map((s) => (
                 <button
                   key={s.slug}
                   onClick={() => onSelect(s.slug)}
-                  className={`text-left bg-[var(--color-white)] rounded-2xl p-5 border-2 transition ${
+                  className={`text-left bg-[var(--color-white)] p-5 border transition lift ${
                     selected === s.slug
-                      ? "border-[var(--color-gold)] shadow-lg"
-                      : "border-[var(--color-border)] hover:border-[var(--color-gold)]/50"
+                      ? "border-[var(--color-gold)] shadow-md"
+                      : "border-[var(--color-border)] hover:border-[var(--color-gold)]/60"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[var(--color-sand)] rounded-xl flex items-center justify-center text-xl">
-                        {s.emoji}
+                    <div className="flex-1">
+                      <div className="font-display text-xl text-[var(--color-ink)] mb-1">
+                        {s.name}
                       </div>
-                      <div>
-                        <div className="font-semibold text-[var(--color-ink)]">
-                          {s.name}
-                        </div>
-                        <div className="text-xs text-[var(--color-muted)]">
-                          ⏱ {s.duration} min
-                        </div>
+                      <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                        <Clock size={12} />
+                        {s.duration} min
                       </div>
                     </div>
-                    <div className="font-display text-xl text-[var(--color-gold-dark)]">
+                    <div className="font-display-light text-3xl text-[var(--color-gold-dark)] leading-none">
                       €{s.price}
                     </div>
                   </div>
-                  <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+                  <p className="text-xs text-[var(--color-ink-soft)] leading-relaxed">
                     {s.description}
                   </p>
                 </button>
@@ -234,39 +284,38 @@ function StaffStep({
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        className="text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)] mb-6"
-      >
-        ← Cambia servizio
-      </button>
-      <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.25em] text-[var(--color-gold)] mb-3">
-          Passo 2 di 4 · {service.name}
+      <BackButton onClick={onBack} label="Cambia servizio" />
+      <div className="mb-10">
+        <div className="eyebrow eyebrow-line mb-4">
+          <span>Passo 2 di 4 · {service.name}</span>
         </div>
-        <h2 className="font-display text-4xl text-[var(--color-ink)]">
-          Con chi preferisci?
+        <h2 className="font-display-light text-4xl md:text-5xl text-[var(--color-ink)] leading-tight">
+          Con chi
+          <br />
+          <span className="italic font-medium text-[var(--color-gold-dark)]">
+            preferisci?
+          </span>
         </h2>
       </div>
 
       <button
         onClick={() => onSelect("any")}
-        className={`w-full text-left bg-[var(--color-sand)]/50 rounded-2xl p-5 border-2 mb-3 transition ${
+        className={`w-full text-left p-5 border mb-4 transition lift bg-[var(--color-bg-warm)]/60 ${
           selected === "any"
-            ? "border-[var(--color-gold)]"
-            : "border-[var(--color-border)] hover:border-[var(--color-gold)]/50"
+            ? "border-[var(--color-gold)] shadow-md"
+            : "border-[var(--color-border)] hover:border-[var(--color-gold)]/60"
         }`}
       >
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-[var(--color-gold)]/20 rounded-full flex items-center justify-center text-2xl">
-            ✨
+          <div className="w-14 h-14 border border-[var(--color-gold)]/40 flex items-center justify-center text-[var(--color-gold-dark)]">
+            <Sparkle size={22} />
           </div>
           <div>
-            <div className="font-semibold text-[var(--color-ink)]">
+            <div className="font-display text-xl text-[var(--color-ink)]">
               Chiunque sia disponibile
             </div>
-            <div className="text-xs text-[var(--color-muted)]">
-              Più slot disponibili
+            <div className="text-xs text-[var(--color-ink-soft)] mt-0.5">
+              Più slot disponibili — risparmi tempo
             </div>
           </div>
         </div>
@@ -277,33 +326,33 @@ function StaffStep({
           <button
             key={person.id}
             onClick={() => onSelect(person.id)}
-            className={`text-left bg-[var(--color-white)] rounded-2xl p-5 border-2 transition ${
+            className={`text-left bg-[var(--color-white)] p-5 border transition lift ${
               selected === person.id
-                ? "border-[var(--color-gold)] shadow-lg"
-                : "border-[var(--color-border)] hover:border-[var(--color-gold)]/50"
+                ? "border-[var(--color-gold)] shadow-md"
+                : "border-[var(--color-border)] hover:border-[var(--color-gold)]/60"
             }`}
           >
             <div className="flex items-center gap-4 mb-3">
-              <div className="w-14 h-14 bg-gradient-to-br from-[var(--color-rose)] to-[var(--color-gold)] rounded-full flex items-center justify-center text-3xl">
-                {person.emoji}
+              <div className="w-16 h-16 flex-shrink-0">
+                <Avatar initial={person.initial} size="md" />
               </div>
               <div>
-                <div className="font-display text-xl text-[var(--color-ink)]">
+                <div className="font-display text-2xl text-[var(--color-ink)] leading-tight">
                   {person.name}
                 </div>
-                <div className="text-xs text-[var(--color-gold)] uppercase tracking-wider">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--color-gold)] mt-1">
                   {person.role}
                 </div>
               </div>
             </div>
-            <p className="text-xs text-[var(--color-muted)] leading-relaxed mb-3">
+            <p className="text-xs text-[var(--color-ink-soft)] leading-relaxed mb-3">
               {person.bio}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {person.specialties.map((sp, i) => (
                 <span
                   key={i}
-                  className="bg-[var(--color-sand)] text-[var(--color-ink)] text-[10px] px-2 py-0.5 rounded-full"
+                  className="text-[10px] uppercase tracking-wider border border-[var(--color-border)] text-[var(--color-ink-soft)] px-2 py-0.5"
                 >
                   {sp}
                 </span>
@@ -330,22 +379,33 @@ function DateTimeStep({
 }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  // Genera 14 giorni a partire da oggi
   const dates = Array.from({ length: 14 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
     return d;
   });
 
-  // Slot disponibili (simulati, alcuni occupati pseudo-randomicamente)
   const timeSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "14:30", "15:00", "15:30", "16:00",
-    "16:30", "17:00", "17:30", "18:00", "18:30",
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "12:00",
+    "12:30",
+    "14:30",
+    "15:00",
+    "15:30",
+    "16:00",
+    "16:30",
+    "17:00",
+    "17:30",
+    "18:00",
+    "18:30",
   ];
 
   const getUnavailable = (date: string) => {
-    // Simula occupazione basata su hash del date+staff
     const hash = (date + staffMember.id)
       .split("")
       .reduce((acc, c) => acc + c.charCodeAt(0), 0);
@@ -363,24 +423,25 @@ function DateTimeStep({
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        className="text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)] mb-6"
-      >
-        ← Cambia operatore
-      </button>
-      <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.25em] text-[var(--color-gold)] mb-3">
-          Passo 3 di 4 · {service.name} ·{" "}
-          {staffMember.id === "any" ? "Qualsiasi" : staffMember.name}
+      <BackButton onClick={onBack} label="Cambia operatore" />
+      <div className="mb-10">
+        <div className="eyebrow eyebrow-line mb-4">
+          <span>
+            Passo 3 di 4 · {service.name} ·{" "}
+            {staffMember.id === "any" ? "Qualsiasi" : staffMember.name}
+          </span>
         </div>
-        <h2 className="font-display text-4xl text-[var(--color-ink)]">
-          Quando preferisci?
+        <h2 className="font-display-light text-4xl md:text-5xl text-[var(--color-ink)] leading-tight">
+          Quando
+          <br />
+          <span className="italic font-medium text-[var(--color-gold-dark)]">
+            preferisci?
+          </span>
         </h2>
       </div>
 
-      <div className="mb-8">
-        <div className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-3">
+      <div className="mb-10">
+        <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--color-muted)] mb-4">
           Scegli una data
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
@@ -393,24 +454,26 @@ function DateTimeStep({
                 key={dateStr}
                 onClick={() => !closed && setSelectedDate(dateStr)}
                 disabled={closed}
-                className={`flex-shrink-0 w-20 py-4 rounded-2xl text-center transition ${
+                className={`flex-shrink-0 w-20 py-4 text-center transition border ${
                   isSelected
-                    ? "bg-[var(--color-ink)] text-[var(--color-bg)]"
+                    ? "bg-[var(--color-ink)] text-[var(--color-bg)] border-[var(--color-ink)]"
                     : closed
-                    ? "bg-[var(--color-sand)]/30 text-[var(--color-muted)]/50 cursor-not-allowed"
-                    : "bg-[var(--color-white)] border border-[var(--color-border)] hover:border-[var(--color-gold)]"
+                    ? "bg-transparent border-[var(--color-border-soft)] text-[var(--color-muted)]/40 cursor-not-allowed"
+                    : "bg-[var(--color-white)] border-[var(--color-border)] hover:border-[var(--color-gold)]"
                 }`}
               >
-                <div className="text-[10px] uppercase tracking-wider mb-1">
+                <div className="text-[10px] uppercase tracking-[0.22em] mb-1">
                   {d.toLocaleDateString("it-IT", { weekday: "short" })}
                 </div>
-                <div className="font-display text-2xl leading-none">
+                <div className="font-display-light text-3xl leading-none">
                   {d.getDate()}
                 </div>
-                <div className="text-[10px] mt-1">
+                <div className="text-[10px] mt-1 capitalize">
                   {d.toLocaleDateString("it-IT", { month: "short" })}
                 </div>
-                {closed && <div className="text-[9px] mt-0.5">chiuso</div>}
+                {closed && (
+                  <div className="text-[9px] mt-1 italic">chiuso</div>
+                )}
               </button>
             );
           })}
@@ -419,7 +482,7 @@ function DateTimeStep({
 
       {selectedDate && (
         <div>
-          <div className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-3">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--color-muted)] mb-4">
             Orari disponibili
           </div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -431,10 +494,10 @@ function DateTimeStep({
                   key={time}
                   disabled={isUnavailable}
                   onClick={() => onSelect(selectedDate, time)}
-                  className={`py-3 rounded-xl text-sm font-medium transition ${
+                  className={`py-3 text-sm transition border ${
                     isUnavailable
-                      ? "bg-[var(--color-sand)]/30 text-[var(--color-muted)]/50 line-through cursor-not-allowed"
-                      : "bg-[var(--color-white)] border border-[var(--color-border)] hover:border-[var(--color-gold)] hover:bg-[var(--color-sand)]/30"
+                      ? "bg-transparent border-[var(--color-border-soft)] text-[var(--color-muted)]/40 line-through cursor-not-allowed"
+                      : "bg-[var(--color-white)] border-[var(--color-border)] hover:border-[var(--color-gold)] hover:bg-[var(--color-bg-warm)]/60"
                   }`}
                 >
                   {time}
@@ -442,7 +505,7 @@ function DateTimeStep({
               );
             })}
           </div>
-          <div className="text-xs text-[var(--color-muted)] mt-4">
+          <div className="text-xs text-[var(--color-muted)] mt-4 italic">
             Gli slot barrati sono già occupati
           </div>
         </div>
@@ -466,7 +529,12 @@ function CustomerStep({
   date: string;
   time: string;
   onBack: () => void;
-  onSubmit: (c: { name: string; email: string; phone: string; notes: string }) => void;
+  onSubmit: (c: {
+    name: string;
+    email: string;
+    phone: string;
+    notes: string;
+  }) => void;
   submitting: boolean;
 }) {
   const [form, setForm] = useState({
@@ -484,20 +552,19 @@ function CustomerStep({
   });
 
   return (
-    <div className="grid md:grid-cols-3 gap-8">
+    <div className="grid md:grid-cols-3 gap-10">
       <div className="md:col-span-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)] mb-6"
-        >
-          ← Cambia data e ora
-        </button>
-        <div className="mb-8">
-          <div className="text-xs uppercase tracking-[0.25em] text-[var(--color-gold)] mb-3">
-            Passo 4 di 4
+        <BackButton onClick={onBack} label="Cambia data e ora" />
+        <div className="mb-10">
+          <div className="eyebrow eyebrow-line mb-4">
+            <span>Passo 4 di 4</span>
           </div>
-          <h2 className="font-display text-4xl text-[var(--color-ink)]">
-            I tuoi dati
+          <h2 className="font-display-light text-4xl md:text-5xl text-[var(--color-ink)] leading-tight">
+            I tuoi
+            <br />
+            <span className="italic font-medium text-[var(--color-gold-dark)]">
+              dati.
+            </span>
           </h2>
         </div>
 
@@ -506,63 +573,48 @@ function CustomerStep({
             e.preventDefault();
             onSubmit(form);
           }}
-          className="space-y-4"
+          className="space-y-5"
         >
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--color-muted)] mb-2">
-              Nome e cognome *
-            </label>
-            <input
-              type="text"
+          <Field
+            label="Nome e cognome"
+            required
+            value={form.name}
+            onChange={(v) => setForm({ ...form, name: v })}
+            placeholder="Giulia Rossi"
+            type="text"
+          />
+          <div className="grid md:grid-cols-2 gap-5">
+            <Field
+              label="Email"
               required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full bg-[var(--color-white)] border border-[var(--color-border)] rounded-xl px-4 py-3 focus:outline-none focus:border-[var(--color-gold)]"
-              placeholder="Giulia Rossi"
+              value={form.email}
+              onChange={(v) => setForm({ ...form, email: v })}
+              placeholder="giulia@email.it"
+              type="email"
+            />
+            <Field
+              label="Telefono"
+              required
+              value={form.phone}
+              onChange={(v) => setForm({ ...form, phone: v })}
+              placeholder="333 1234567"
+              type="tel"
             />
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-[var(--color-muted)] mb-2">
-                Email *
-              </label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-[var(--color-white)] border border-[var(--color-border)] rounded-xl px-4 py-3 focus:outline-none focus:border-[var(--color-gold)]"
-                placeholder="giulia@email.it"
-              />
-            </div>
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-[var(--color-muted)] mb-2">
-                Telefono *
-              </label>
-              <input
-                type="tel"
-                required
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full bg-[var(--color-white)] border border-[var(--color-border)] rounded-xl px-4 py-3 focus:outline-none focus:border-[var(--color-gold)]"
-                placeholder="333 1234567"
-              />
-            </div>
-          </div>
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--color-muted)] mb-2">
+            <label className="block text-[10px] uppercase tracking-[0.22em] text-[var(--color-muted)] mb-2">
               Note (opzionale)
             </label>
             <textarea
               rows={3}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full bg-[var(--color-white)] border border-[var(--color-border)] rounded-xl px-4 py-3 focus:outline-none focus:border-[var(--color-gold)] resize-none"
-              placeholder="Es: allergie, preferenze di stile..."
+              className="w-full bg-[var(--color-white)] border border-[var(--color-border)] px-4 py-3 focus:outline-none focus:border-[var(--color-gold)] resize-none text-sm"
+              placeholder="Es: allergie, preferenze di stile, primo appuntamento..."
             />
           </div>
 
-          <label className="flex items-start gap-3 text-xs text-[var(--color-muted)] cursor-pointer pt-2">
+          <label className="flex items-start gap-3 text-xs text-[var(--color-ink-soft)] cursor-pointer pt-2">
             <input
               type="checkbox"
               required
@@ -577,70 +629,165 @@ function CustomerStep({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-[var(--color-ink)] text-[var(--color-bg)] py-4 rounded-full font-medium hover:bg-[var(--color-gold-dark)] transition disabled:opacity-50 mt-4"
+            className="group w-full inline-flex items-center justify-center gap-2 bg-[var(--color-ink)] text-[var(--color-bg)] py-4 text-sm tracking-wide hover:bg-[var(--color-gold-dark)] transition disabled:opacity-50 mt-4"
           >
-            {submitting ? "Invio in corso..." : "Conferma prenotazione →"}
+            {submitting ? (
+              "Invio in corso..."
+            ) : (
+              <>
+                Conferma prenotazione
+                <ArrowRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </>
+            )}
           </button>
 
-          <p className="text-xs text-[var(--color-muted)] text-center">
-            Riceverai una conferma via email e SMS. Puoi disdire fino a 24h
-            prima senza costi.
+          <p className="text-[11px] text-[var(--color-muted)] text-center italic">
+            Riceverai una conferma via email e SMS. Disdici fino a 24h prima
+            senza costi.
           </p>
         </form>
       </div>
 
       {/* Riepilogo sticky */}
       <div>
-        <div className="sticky top-24 bg-[var(--color-sand)]/40 rounded-3xl p-6 border border-[var(--color-border)]">
-          <div className="text-xs uppercase tracking-wider text-[var(--color-gold)] mb-4">
+        <div className="sticky top-28 bg-[var(--color-bg-warm)] p-8 border border-[var(--color-border)]">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--color-gold)] mb-6 pb-4 border-b border-[var(--color-border)]">
             Riepilogo
           </div>
-          <div className="space-y-4 text-sm">
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] mb-1">
-                Servizio
-              </div>
-              <div className="font-semibold text-[var(--color-ink)]">
-                {service.emoji} {service.name}
-              </div>
-              <div className="text-xs text-[var(--color-muted)] mt-0.5">
-                {service.duration} minuti
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] mb-1">
-                Con
-              </div>
-              <div className="font-semibold text-[var(--color-ink)]">
-                {staffMember.id === "any"
+          <div className="space-y-5 text-sm">
+            <SummaryRow
+              label="Servizio"
+              value={service.name}
+              sub={`${service.duration} minuti`}
+            />
+            <SummaryRow
+              label="Con"
+              value={
+                staffMember.id === "any"
                   ? "Chiunque disponibile"
-                  : `${staffMember.emoji} ${staffMember.name}`}
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] mb-1">
-                Quando
-              </div>
-              <div className="font-semibold text-[var(--color-ink)] capitalize">
-                {formattedDate}
-              </div>
-              <div className="text-[var(--color-gold-dark)] font-display text-2xl mt-0.5">
-                {time}
-              </div>
-            </div>
+                  : staffMember.name
+              }
+            />
+            <SummaryRow
+              label="Quando"
+              value={formattedDate}
+              sub={time}
+              capitalize
+              highlight
+            />
           </div>
 
-          <div className="mt-6 pt-6 border-t border-[var(--color-border)] flex justify-between items-baseline">
-            <span className="text-sm text-[var(--color-muted)]">Totale</span>
-            <span className="font-display text-3xl text-[var(--color-ink)]">
+          <div className="mt-7 pt-6 border-t border-[var(--color-border)] flex justify-between items-baseline">
+            <span className="text-[10px] uppercase tracking-[0.28em] text-[var(--color-muted)]">
+              Totale
+            </span>
+            <span className="font-display-light text-4xl text-[var(--color-ink)]">
               €{service.price}
             </span>
           </div>
-          <div className="text-[11px] text-[var(--color-muted)] text-right mt-1">
+          <div className="text-[10px] text-[var(--color-muted)] text-right italic mt-1">
             Pagamento in salone
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ============ HELPERS ============
+
+function BackButton({
+  onClick,
+  label,
+}: {
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="group inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-[var(--color-muted)] hover:text-[var(--color-ink)] mb-8 transition"
+    >
+      <ArrowLeft
+        size={14}
+        className="transition-transform group-hover:-translate-x-1"
+      />
+      {label}
+    </button>
+  );
+}
+
+function Field({
+  label,
+  type,
+  value,
+  onChange,
+  placeholder,
+  required,
+}: {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-[10px] uppercase tracking-[0.22em] text-[var(--color-muted)] mb-2">
+        {label} {required && <span className="text-[var(--color-gold)]">*</span>}
+      </label>
+      <input
+        type={type}
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-[var(--color-white)] border border-[var(--color-border)] px-4 py-3 focus:outline-none focus:border-[var(--color-gold)] text-sm"
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  sub,
+  capitalize,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  capitalize?: boolean;
+  highlight?: boolean;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--color-muted)] mb-1">
+        {label}
+      </div>
+      <div
+        className={`font-display text-lg text-[var(--color-ink)] leading-tight ${
+          capitalize ? "capitalize" : ""
+        }`}
+      >
+        {value}
+      </div>
+      {sub && (
+        <div
+          className={`mt-0.5 ${
+            highlight
+              ? "font-display-light text-3xl text-[var(--color-gold-dark)] mt-1"
+              : "text-xs text-[var(--color-muted)]"
+          }`}
+        >
+          {sub}
+        </div>
+      )}
     </div>
   );
 }

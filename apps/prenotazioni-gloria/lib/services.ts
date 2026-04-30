@@ -1,11 +1,16 @@
+export type ServiceCategory =
+  | "parrucchiere"
+  | "estetica"
+  | "manicure"
+  | "trattamenti";
+
 export type Service = {
   slug: string;
   name: string;
-  category: "parrucchiere" | "estetica" | "manicure" | "trattamenti";
+  category: ServiceCategory;
   duration: number; // minuti
   price: number;
   description: string;
-  emoji: string;
 };
 
 export type Staff = {
@@ -14,7 +19,7 @@ export type Staff = {
   role: string;
   bio: string;
   specialties: string[];
-  emoji: string;
+  initial: string; // iniziale per avatar tipografico
   services: string[]; // slug servizi che fa
 };
 
@@ -28,7 +33,6 @@ export const services: Service[] = [
     price: 35,
     description:
       "Taglio personalizzato con consulenza, shampoo e piega finale. Include analisi del capello.",
-    emoji: "💇‍♀️",
   },
   {
     slug: "piega",
@@ -38,7 +42,6 @@ export const services: Service[] = [
     price: 22,
     description:
       "Shampoo, trattamento base e piega a scelta tra liscio, onde o ricci.",
-    emoji: "💨",
   },
   {
     slug: "colore",
@@ -48,7 +51,6 @@ export const services: Service[] = [
     price: 55,
     description:
       "Colorazione professionale con prodotti senza ammoniaca. Include taglio e piega.",
-    emoji: "🎨",
   },
   {
     slug: "meches",
@@ -58,7 +60,6 @@ export const services: Service[] = [
     price: 95,
     description:
       "Schiariture personalizzate, tecnica balayage o meches. Include toner, taglio e piega.",
-    emoji: "✨",
   },
   {
     slug: "taglio-uomo",
@@ -67,7 +68,6 @@ export const services: Service[] = [
     duration: 30,
     price: 20,
     description: "Taglio personalizzato, rifinitura barba, shampoo e styling.",
-    emoji: "💈",
   },
   // MANICURE
   {
@@ -77,7 +77,6 @@ export const services: Service[] = [
     duration: 45,
     price: 18,
     description: "Limatura, cuticole, massaggio mani e smalto classico a scelta.",
-    emoji: "💅",
   },
   {
     slug: "manicure-semi",
@@ -87,7 +86,6 @@ export const services: Service[] = [
     price: 28,
     description:
       "Manicure completa con applicazione smalto semipermanente. Dura 3 settimane.",
-    emoji: "💎",
   },
   {
     slug: "pedicure",
@@ -97,9 +95,8 @@ export const services: Service[] = [
     price: 32,
     description:
       "Pediluvio, rimozione calli, cuticole, massaggio piedi e smalto.",
-    emoji: "🦶",
   },
-  // ESTETICA
+  // ESTETICA / VISO
   {
     slug: "pulizia-viso",
     name: "Pulizia Viso Profonda",
@@ -108,7 +105,6 @@ export const services: Service[] = [
     price: 45,
     description:
       "Detersione, esfoliazione, estrazione impurità, maschera e idratazione.",
-    emoji: "🧖‍♀️",
   },
   {
     slug: "trattamento-antiage",
@@ -118,7 +114,6 @@ export const services: Service[] = [
     price: 65,
     description:
       "Protocollo viso con sieri attivi, massaggio tonificante, maschera rassodante.",
-    emoji: "🌸",
   },
   {
     slug: "sopracciglia",
@@ -128,9 +123,8 @@ export const services: Service[] = [
     price: 12,
     description:
       "Definizione forma sopracciglia con cera e pinzetta, tinta opzionale.",
-    emoji: "👁️",
   },
-  // TRATTAMENTI CORPO
+  // CORPO
   {
     slug: "massaggio-rilassante",
     name: "Massaggio Rilassante",
@@ -139,7 +133,6 @@ export const services: Service[] = [
     price: 55,
     description:
       "Massaggio total body con oli essenziali per sciogliere tensioni.",
-    emoji: "🌿",
   },
   {
     slug: "massaggio-drenante",
@@ -149,7 +142,6 @@ export const services: Service[] = [
     price: 60,
     description:
       "Massaggio mirato per stimolare circolazione e drenaggio linfatico.",
-    emoji: "💧",
   },
 ];
 
@@ -157,34 +149,28 @@ export const staff: Staff[] = [
   {
     id: "gloria",
     name: "Gloria",
-    role: "Titolare / Hair Stylist",
-    bio: "25 anni di esperienza. Specializzata in colore e tagli contemporanei.",
+    role: "Titolare · Hair Stylist",
+    bio: "25 anni di esperienza, formata a Londra. Specializzata in colore e tagli contemporanei.",
     specialties: ["Colore", "Meches", "Tagli corti"],
-    emoji: "👩‍🦰",
-    services: [
-      "taglio-donna",
-      "piega",
-      "colore",
-      "meches",
-      "taglio-uomo",
-    ],
+    initial: "G",
+    services: ["taglio-donna", "piega", "colore", "meches", "taglio-uomo"],
   },
   {
     id: "martina",
     name: "Martina",
-    role: "Hair Stylist Junior",
+    role: "Hair Stylist",
     bio: "Formazione a Milano da Toni & Guy. Esperta in balayage e onde naturali.",
     specialties: ["Balayage", "Styling", "Cura del capello"],
-    emoji: "👩",
+    initial: "M",
     services: ["taglio-donna", "piega", "meches"],
   },
   {
     id: "chiara",
     name: "Chiara",
     role: "Estetista",
-    bio: "Diplomata CIDESCO. Specialista in trattamenti viso e massaggi.",
+    bio: "Diplomata CIDESCO. Specialista in trattamenti viso e massaggi del corpo.",
     specialties: ["Anti-age", "Pulizia viso", "Massaggi"],
-    emoji: "👩‍⚕️",
+    initial: "C",
     services: [
       "pulizia-viso",
       "trattamento-antiage",
@@ -199,21 +185,32 @@ export const staff: Staff[] = [
     role: "Onicotecnica",
     bio: "Certificata gel e semipermanente. Nail art su richiesta.",
     specialties: ["Semipermanente", "Nail art", "Pedicure"],
-    emoji: "👩‍🎨",
+    initial: "V",
     services: ["manicure-classica", "manicure-semi", "pedicure"],
   },
 ];
 
-export const categoryLabels = {
+export const categoryLabels: Record<ServiceCategory, string> = {
   parrucchiere: "Parrucchiere",
   estetica: "Viso",
   manicure: "Mani e Piedi",
   trattamenti: "Corpo",
-} as const;
+};
 
-export const categoryEmojis = {
-  parrucchiere: "💇‍♀️",
-  estetica: "🧖‍♀️",
-  manicure: "💅",
-  trattamenti: "🌿",
+export const categoryDescriptions: Record<ServiceCategory, string> = {
+  parrucchiere: "Taglio, colore e cura del capello",
+  estetica: "Pulizia, anti-age e dettagli",
+  manicure: "Manicure, pedicure e nail art",
+  trattamenti: "Massaggi rilassanti e drenanti",
+};
+
+/**
+ * Gli iconKey identificano un'icona SVG line-art definita
+ * in `app/components/Icon.tsx`. Niente emoji.
+ */
+export const categoryIconKeys: Record<ServiceCategory, string> = {
+  parrucchiere: "scissors",
+  estetica: "sparkle",
+  manicure: "diamond",
+  trattamenti: "leaf",
 };

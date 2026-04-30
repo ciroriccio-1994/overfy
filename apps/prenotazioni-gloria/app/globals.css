@@ -1,20 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #1a1a1a;
-  --color-bg: #fafaf7;
+  /* Palette base — cream paper / ink / oro brunito / rosa cipria */
+  --color-ink: #1a1612;
+  --color-ink-soft: #3a342c;
+  --color-bg: #faf6ef;
+  --color-bg-warm: #f3ebe0;
   --color-white: #ffffff;
+
   --color-rose: #e8c4bd;
-  --color-rose-dark: #c98d82;
+  --color-rose-soft: #f1d6d0;
+  --color-rose-dark: #b87d72;
+
   --color-gold: #b89460;
+  --color-gold-soft: #d4b585;
   --color-gold-dark: #8a6f44;
-  --color-sand: #f3ebe0;
+
+  --color-sand: #ede2d0;
+  --color-sand-deep: #d9c9b1;
+
   --color-muted: #8a8578;
-  --color-border: #e8e2d4;
+  --color-muted-soft: #b8b3a5;
+  --color-border: #e3dccc;
+  --color-border-soft: #efe9da;
+
   --color-success: #6b8a5f;
 
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  /* Typography */
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 html,
@@ -23,15 +37,175 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 }
 
-.font-display {
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.01em;
+/* Subtle paper texture on the background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(184, 148, 96, 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 60%,
+      rgba(232, 196, 189, 0.05) 0%,
+      transparent 50%
+    );
+}
+
+main,
+nav,
+footer {
+  position: relative;
+  z-index: 1;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Display font weights */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.font-display-light {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+
+/* Editorial eyebrow label */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--color-gold);
+}
+
+.eyebrow-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.eyebrow-line::before {
+  content: "";
+  width: 2rem;
+  height: 1px;
+  background: var(--color-gold);
+}
+
+/* Decorative ornament — used between sections */
+.ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--color-gold);
+}
+
+.ornament::before,
+.ornament::after {
+  content: "";
+  width: 3rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* Scroll bar hidden for date pickers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Subtle hover lift */
+.lift {
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease,
+    border-color 250ms ease;
+}
+
+.lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Underline on link hover */
+.underline-grow {
+  position: relative;
+  display: inline-block;
+}
+
+.underline-grow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 350ms ease;
+}
+
+.underline-grow:hover::after {
+  transform: scaleX(1);
+}
+
+/* Soft fade-in on section entries */
+@keyframes softFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: softFadeUp 600ms ease-out both;
+}
+
+/* Pulse for "open now" dot */
+@keyframes softPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.pulse-soft {
+  animation: softPulse 2s ease-in-out infinite;
+}
+
+/* Print rules for confirmation page */
+@media print {
+  nav,
+  footer,
+  button {
+    display: none !important;
+  }
 }
